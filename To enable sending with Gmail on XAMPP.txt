@@ -1,0 +1,21 @@
+To enable sending with Gmail on XAMPP:
+
+1. Turn on 2-Step Verification for the Gmail account that will send the messages, then create a Google App Password. Use that app password—not your regular Gmail password.
+
+2. Open C:\xampp\apache\conf\httpd.conf and add these lines near the bottom, replacing the example addresses and password with your own values:
+
+SetEnv EVALSYS_SMTP_HOST smtp.gmail.com
+SetEnv EVALSYS_SMTP_PORT 587
+SetEnv EVALSYS_SMTP_SECURE tls
+SetEnv EVALSYS_SMTP_USERNAME your-sender@gmail.com
+SetEnv EVALSYS_SMTP_PASSWORD your-16-character-app-password
+SetEnv EVALSYS_SMTP_FROM_EMAIL your-sender@gmail.com
+SetEnv EVALSYS_SMTP_FROM_NAME EvalSys
+
+Keep the app password private; don’t put it in chat or commit it to the project.
+
+3. Stop and restart Apache in the XAMPP Control Panel so it picks up the settings.
+
+4. Open the app through XAMPP at http://localhost/EvalSys.v3.3%20-%20With%20Profile/login.html (not as a file:/// page), choose Forgot password?, enter the employee’s saved email address, and click Send Verification Code.
+
+5. Check that mailbox’s inbox and spam folder. Enter the six-digit code, choose a new password of at least 8 characters, then sign in with it.
