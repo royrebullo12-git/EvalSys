@@ -32,8 +32,9 @@
         body {
             background-color: var(--background);
             color: var(--text-main);
-            height: 100vh;
-            overflow: hidden;
+            min-height: 100vh;
+            overflow-x: hidden;
+            overflow-y: auto;
         }
 
         /* =========================================
@@ -41,10 +42,12 @@
            ========================================= */
         #login-screen {
             display: flex;
-            height: 100vh;
+            min-height: 100vh;
+            height: auto;
             width: 100vw;
             align-items: center;
             justify-content: center;
+            padding: 24px;
             background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
         }
 
@@ -124,6 +127,29 @@
         }
 
         .btn-block:hover { background-color: var(--primary-hover); }
+
+        .text-button {
+            display: inline-block;
+            margin-top: 18px;
+            border: 0;
+            background: none;
+            color: var(--primary);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .form-message {
+            min-height: 20px;
+            margin-top: 12px;
+            color: #b91c1c;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .form-message.success { color: #047857; }
+
+        [hidden] { display: none !important; }
 
         /* =========================================
            DASHBOARD LAYOUT STYLES
@@ -964,36 +990,203 @@
 
                 <div class="form-group">
                     <label for="password">Password</label>
-                    <input type="password" id="password" class="form-control" value="password123" required>
+                    <input type="password" id="password" class="form-control" autocomplete="current-password" required>
                 </div>
 
                 <button type="submit" class="btn-block">Secure Sign In</button>
+                <p id="loginMessage" class="form-message" role="alert"></p>
             </form>
+
+            <form id="forceChangeForm" hidden>
+                <div class="form-group">
+                    <label for="firstNewPassword">New password</label>
+                    <input type="password" id="firstNewPassword" class="form-control" minlength="8" autocomplete="new-password" required>
+                </div>
+                <div class="form-group">
+                    <label for="firstConfirmPassword">Confirm new password</label>
+                    <input type="password" id="firstConfirmPassword" class="form-control" minlength="8" autocomplete="new-password" required>
+                </div>
+                <button type="submit" class="btn-block">Set Password</button>
+                <p id="forceChangeMessage" class="form-message" role="alert"></p>
+            </form>
+
+            <section id="resetPanel" hidden>
+                <form id="sendCodeForm">
+                    <div class="form-group">
+                        <label for="resetEmail">Employee email address</label>
+                        <input type="email" id="resetEmail" class="form-control" autocomplete="email" required>
+                    </div>
+                    <button type="submit" class="btn-block">Send Verification Code</button>
+                    <p id="sendCodeMessage" class="form-message" role="status"></p>
+                </form>
+
+                <form id="resetPasswordForm" hidden>
+                    <div class="form-group">
+                        <label for="resetCode">Six-digit verification code</label>
+                        <input type="text" id="resetCode" class="form-control" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="resetNewPassword">New password</label>
+                        <input type="password" id="resetNewPassword" class="form-control" minlength="8" autocomplete="new-password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="resetConfirmPassword">Confirm new password</label>
+                        <input type="password" id="resetConfirmPassword" class="form-control" minlength="8" autocomplete="new-password" required>
+                    </div>
+                    <button type="submit" class="btn-block">Reset Password</button>
+                    <p id="resetPasswordMessage" class="form-message" role="alert"></p>
+                </form>
+            </section>
+
+            <button type="button" id="forgotPasswordButton" class="text-button">Forgot password?</button>
+            <button type="button" id="backToLoginButton" class="text-button" hidden>Back to sign in</button>
         </div>
     </div>
 
     <script>
-        // --- Login Handling: routes to the standalone page for the selected role ---
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
+        const loginForm = document.getElementById('loginForm');
+        const forceChangeForm = document.getElementById('forceChangeForm');
+        const resetPanel = document.getElementById('resetPanel');
+        const forgotPasswordButton = document.getElementById('forgotPasswordButton');
+        const backToLoginButton = document.getElementById('backToLoginButton');
+        let pendingFirstLogin = null;
 
+        function setMessage(elementId, text, success = false) {
+            const element = document.getElementById(elementId);
+            element.textContent = text;
+            element.classList.toggle('success', success);
+        }
+
+        function finishSignIn(user) {
+            const roles = { 1: 'admin', 2: 'evaluator', 3: 'employee' };
+            const role = roles[user.role_id];
+            if (!role) {
+                throw new Error('This account has an unsupported role.');
+            }
+            sessionStorage.setItem('evalsys_username', user.full_name);
+            sessionStorage.setItem('evalsys_user_id', String(user.user_id));
+            sessionStorage.setItem('evalsys_role', role);
+            window.location.href = { admin: 'admin/index.html', evaluator: 'evaluator.html', employee: 'employee.html' }[role];
+        }
+
+        async function postForm(url, formData) {
+            const response = await fetch(url, { method: 'POST', body: formData });
+            const result = await response.json();
+            if (!response.ok || result.status === 'error') {
+                throw new Error(result.message || 'The request could not be completed.');
+            }
+            return result;
+        }
+
+        loginForm.addEventListener('submit', async function(event) {
+            event.preventDefault();
+            setMessage('loginMessage', '');
             const selectedRole = document.getElementById('roleSelect').value;
-            const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value;
             const formData = new FormData();
             formData.append('role', selectedRole);
-            formData.append('username', username);
+            formData.append('username', document.getElementById('username').value.trim());
             formData.append('password', password);
-            fetch('login.php', { method:'POST', body:formData })
-                .then(response => response.json())
-                .then(result => {
-                    if (result.status !== 'success') throw new Error(result.message || 'Unable to sign in.');
-                    sessionStorage.setItem('evalsys_username', result.full_name);
-                    sessionStorage.setItem('evalsys_user_id', String(result.user_id));
-                    sessionStorage.setItem('evalsys_role', selectedRole);
-                    window.location.href = { admin:'admin/index.html', evaluator:'evaluator.html', employee:'employee.html' }[selectedRole];
-                })
-                .catch(error => alert(error.message));
+
+            try {
+                const result = await postForm('login_action.php', formData);
+                const user = { user_id: result.user_id, full_name: result.full_name, role_id: result.role_id };
+                if (result.status === 'force_change') {
+                    pendingFirstLogin = { ...user, current_password: password };
+                    loginForm.hidden = true;
+                    forceChangeForm.hidden = false;
+                    forgotPasswordButton.hidden = false;
+                    return;
+                }
+                finishSignIn(user);
+            } catch (error) {
+                setMessage('loginMessage', error.message);
+            }
+        });
+
+        forceChangeForm.addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const newPassword = document.getElementById('firstNewPassword').value;
+            const confirmation = document.getElementById('firstConfirmPassword').value;
+            if (newPassword !== confirmation) {
+                setMessage('forceChangeMessage', 'The passwords do not match.');
+                return;
+            }
+            const formData = new FormData();
+            formData.append('username', pendingFirstLogin.full_name);
+            formData.append('current_password', pendingFirstLogin.current_password);
+            formData.append('new_password', newPassword);
+            try {
+                const result = await postForm('force_change.php', formData);
+                finishSignIn(result);
+            } catch (error) {
+                setMessage('forceChangeMessage', error.message);
+            }
+        });
+
+        forgotPasswordButton.addEventListener('click', function() {
+            loginForm.hidden = true;
+            forceChangeForm.hidden = true;
+            resetPanel.hidden = false;
+            forgotPasswordButton.hidden = true;
+            backToLoginButton.hidden = false;
+            document.getElementById('resetEmail').focus();
+        });
+
+        backToLoginButton.addEventListener('click', function() {
+            resetPanel.hidden = true;
+            forceChangeForm.hidden = true;
+            loginForm.hidden = false;
+            forgotPasswordButton.hidden = false;
+            backToLoginButton.hidden = true;
+        });
+
+        document.getElementById('sendCodeForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const email = document.getElementById('resetEmail').value.trim();
+            const formData = new FormData();
+            formData.append('reset_email', email);
+            const button = event.currentTarget.querySelector('button[type="submit"]');
+            button.disabled = true;
+            try {
+                const result = await postForm('send_otp.php', formData);
+                setMessage('sendCodeMessage', result.message, true);
+                document.getElementById('resetPasswordForm').hidden = false;
+                document.getElementById('resetCode').focus();
+            } catch (error) {
+                setMessage('sendCodeMessage', error.message);
+            } finally {
+                button.disabled = false;
+            }
+        });
+
+        document.getElementById('resetPasswordForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const form = event.currentTarget;
+            const newPassword = document.getElementById('resetNewPassword').value;
+            if (newPassword !== document.getElementById('resetConfirmPassword').value) {
+                setMessage('resetPasswordMessage', 'The passwords do not match.');
+                return;
+            }
+            const formData = new FormData();
+            formData.append('email', document.getElementById('resetEmail').value.trim());
+            formData.append('otp_code', document.getElementById('resetCode').value.trim());
+            formData.append('new_password', newPassword);
+            try {
+                const result = await postForm('verify_otp.php', formData);
+                setMessage('resetPasswordMessage', result.message, true);
+                form.hidden = true;
+                loginForm.hidden = false;
+                resetPanel.hidden = true;
+                forgotPasswordButton.hidden = false;
+                backToLoginButton.hidden = true;
+                setMessage('loginMessage', result.message, true);
+                document.getElementById('password').value = '';
+                document.getElementById('username').value = '';
+                document.getElementById('username').focus();
+            } catch (error) {
+                setMessage('resetPasswordMessage', error.message);
+            }
         });
     </script>
 </body>

@@ -1,7 +1,7 @@
 <?php
 // update_profile.php
 
-// 1. Connect to your database
+// 1. Connect to the database
 $conn = new mysqli("localhost", "root", "", "evalsys_db");
 
 if ($conn->connect_error) {
@@ -42,11 +42,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $pass_query_part = "";
     if (!empty($new_password)) {
         $hashed_pass = password_hash($new_password, PASSWORD_DEFAULT);
-        $pass_query_part = ", password = '$hashed_pass'";
+        // Force the user out of the temporary password lock if they change their password here
+        $pass_query_part = ", password = '$hashed_pass', is_first_login = 0";
     }
 
     // 4. Update the tbl_employees table
-    // Matches the user based on the full_name column in your database
     $sql = "UPDATE tbl_employees SET email = '$email' $pass_query_part $pic_query_part WHERE full_name = '$username'";
     
     if ($conn->query($sql) === TRUE) {
@@ -55,7 +55,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 window.history.back();
               </script>";
     } else {
-        echo "Error updating record: " . $conn->error;
+        echo "<script>
+                alert('Error updating record: " . $conn->error . "');
+                window.history.back();
+              </script>";
     }
 }
 

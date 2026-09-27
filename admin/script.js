@@ -95,14 +95,16 @@ function closeAddUserModal() { document.getElementById('add-user-modal').style.d
 async function submitAddUser() {
     const modal = document.getElementById('add-user-modal');
     const nameInput = modal.querySelector('input[placeholder*="Maria Santos"]');
+    const emailInput = modal.querySelector('input[type="email"]');
     const deptInput = modal.querySelector('input[placeholder*="Sales"]');
     const roleSelect = modal.querySelector('select');
 
     const fullName = nameInput.value.trim();
+    const email = emailInput.value.trim();
     const department = deptInput.value.trim();
     const roleText = roleSelect.value;
 
-    if (!fullName || !department || !roleText) {
+    if (!fullName || !email || !department || !roleText) {
         alert("Please fill out all fields.");
         return;
     }
@@ -112,6 +114,7 @@ async function submitAddUser() {
 
     const formData = new FormData();
     formData.append('full_name', fullName);
+    formData.append('email', email);
     formData.append('department', department);
     formData.append('role_id', roleId);
 
@@ -123,6 +126,7 @@ async function submitAddUser() {
         if (result.status === 'success') {
             closeAddUserModal();
             nameInput.value = '';
+            emailInput.value = '';
             deptInput.value = '';
             roleSelect.selectedIndex = 0;
             
