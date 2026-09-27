@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EvalSys - Performance Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- MAIN DASHBOARD LAYOUT (Admin) -->
+    <div id="main-dashboard" style="display:flex;">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="brand">
+                <i class="fa-solid fa-chart-pie"></i> EvalSys
+            </div>
+            <!-- Admin Sidebar Menu -->
+            <div id="nav-admin" class="role-nav active">
+                <div class="nav-label">Master Data</div>
+                <ul class="nav-list">
+                    <li class="nav-item active" onclick="switchAdminView('admin-overview', this)"><i class="fa-solid fa-house"></i> Dashboard Overview</li>
+                    <li class="nav-item" onclick="switchAdminView('admin-criteria', this)"><i class="fa-solid fa-list-check"></i> Evaluation Criteria</li>
+                </ul>
+                <div class="nav-label">Task Management</div>
+                <ul class="nav-list">
+                    <li class="nav-item" onclick="switchAdminView('admin-assignments', this)"><i class="fa-solid fa-clipboard-user"></i> Assign Evaluations</li>
+                </ul>
+                <div class="nav-label">System</div>
+                <ul class="nav-list">
+                    <li class="nav-item" onclick="switchAdminView('admin-employees', this)"><i class="fa-solid fa-users"></i> Manage Employees</li>
+                    <li class="nav-item" onclick="switchAdminView('admin-roles', this)"><i class="fa-solid fa-shield-halved"></i> Access Roles</li>
+                </ul>
+            </div>
+
+            <ul class="nav-list" style="margin-top: auto;">
+                <li class="nav-item" onclick="window.location.href='../login.html'" style="color: #ef4444;"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out</li>
+            </ul>
+        </aside>
+
+        <div class="sidebar-overlay" onclick="closeMobileMenu()"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-left">
+                    <button class="menu-toggle" onclick="toggleMobileMenu()" aria-label="Toggle menu"><i class="fa-solid fa-bars"></i></button>
+                    <div class="header-title" id="dashboard-title">System Administrator</div>
+                </div>
+                <div class="user-profile">
+                    <span id="user-name-display">Admin User</span>
+                    <div class="avatar">AU</div>
+                </div>
+            </header>
+
+            <div class="dashboard-container">
+                <!-- ADMIN VIEW -->
+                <div id="view-admin" class="role-view active">
+                    
+                    <!-- Admin View 1: Overview -->
+                    <div id="admin-overview" class="admin-section active">
+                        <div class="stats-grid">
+                            <div class="stat-card"><div class="stat-info"><p>Total Employees in System</p><h3>142</h3></div><div class="stat-icon"><i class="fa-solid fa-user-group"></i></div></div>
+                            <div class="stat-card"><div class="stat-info"><p>Active Criteria Rules</p><h3>5</h3></div><div class="stat-icon"><i class="fa-solid fa-list-ol"></i></div></div>
+                            <div class="stat-card"><div class="stat-info"><p>Assigned Evaluators</p><h3>12</h3></div><div class="stat-icon"><i class="fa-solid fa-user-tie"></i></div></div>
+                        </div>
+
+                        <div class="table-section">
+                            <div class="table-header">
+                                <h2>Evaluation Criteria Overview</h2>
+                                <span class="badge badge-info">Applies to all employees</span>
+                            </div>
+                            <div class="table-scroll"><table>
+                                <thead><tr><th>Criteria Name</th><th>Impact</th><th>Distribution</th><th>Description</th></tr></thead>
+                                <tbody id="overview-criteria-body"></tbody>
+                            </table></div>
+                        </div>
+                    </div>
+
+                    <!-- Admin View 2: Criteria -->
+                    <div id="admin-criteria" class="admin-section">
+                        <div class="table-section">
+                            <div class="table-header">
+                                <h2>Evaluation Criteria</h2>
+                                <button class="btn-primary" onclick="openAddCriteriaModal()"><i class="fa-solid fa-plus"></i> Add Criteria</button>
+                            </div>
+                            <div class="table-scroll"><table>
+                                <thead><tr><th>Criteria ID</th><th>Criteria Name</th><th>Impact</th><th>Distribution</th><th>Description</th><th>Actions</th></tr></thead>
+                                <tbody id="manage-criteria-body"></tbody>
+                            </table></div>
+                        </div>
+                    </div>
+
+                    <!-- Admin View 5: Task Assignments (Reverted Original v2 Layout) -->
+                    <div id="admin-assignments" class="admin-section">
+                        <div class="table-section">
+                            <div class="table-header">
+                                <h2>Evaluation Task Assignments</h2>
+                                <button class="btn-primary" onclick="openAssignTaskModal()"><i class="fa-solid fa-plus"></i> Assign Evaluation Task</button>
+                            </div>
+                            <div class="filter-bar">
+                                <div class="filter-group">
+                                    <label for="assignmentDepartmentFilter">Department</label>
+                                    <select id="assignmentDepartmentFilter" class="form-control filter-select" onchange="filterAssignmentsByDepartment()">
+                                        <option value="all">All Departments</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="table-scroll">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Task ID</th>
+                                            <th>Evaluator (Manager)</th>
+                                            <th>Subject (Employee)</th>
+                                            <th>Evaluation Period</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="assignmentsTableBody">
+                                        <!-- Dynamic Rows Here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Admin View 3: Employees -->
+                    <div id="admin-employees" class="admin-section">
+                        <div class="table-section">
+                            <div class="table-header">
+                                <h2>Employees</h2>
+                                <button class="btn-primary" onclick="openAddUserModal()"><i class="fa-solid fa-plus"></i> Add Employee</button>
+                            </div>
+                            <div class="table-scroll"><table>
+                                <thead><tr><th>Emp ID</th><th>Full Name</th><th>Department</th><th>Role Assigned</th><th>Status</th><th>Actions</th></tr></thead>
+                                <tbody id="manage-employees-body"></tbody>
+                            </table></div>
+                        </div>
+                    </div>
+
+                    <!-- Admin View 4: Roles -->
+                    <div id="admin-roles" class="admin-section">
+                        <div class="table-section">
+                            <div class="table-header"><h2>Access Roles</h2></div>
+                            <div class="table-scroll"><table>
+                                <thead><tr><th>Role ID</th><th>Role Name</th><th>Description</th><th>System Access Level</th></tr></thead>
+                                <tbody>
+                                    <tr><td><strong>1</strong></td><td><span class="badge badge-info">Administrator</span></td><td>Full system access. Modifies core records.</td><td>Master</td></tr>
+                                    <tr><td><strong>2</strong></td><td><span class="badge">Evaluator</span></td><td>Evaluates assigned team.</td><td>Managerial</td></tr>
+                                    <tr><td><strong>3</strong></td><td><span class="badge">Employee</span></td><td>Can view tasks and awards received.</td><td>Read-Only</td></tr>
+                                </tbody>
+                            </table></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- MODALS -->
+    <!-- ADD USER MODAL -->
+    <div id="add-user-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header"><h2>Add New User</h2><button class="close-btn" onclick="closeAddUserModal()"><i class="fa-solid fa-xmark"></i></button></div>
+            <form id="addUserForm">
+                <div class="form-group"><label>Full Name</label><input type="text" class="form-control" placeholder="e.g. Maria Santos" required></div>
+                <div class="form-group"><label>Department</label><input type="text" class="form-control" placeholder="e.g. Sales" required></div>
+                <div class="form-group"><label>Assign Role</label><select class="form-control" required><option value="" disabled selected>Choose a role...</option><option>Evaluator</option><option>Employee</option></select></div>
+                <button type="button" class="btn-block" onclick="submitAddUser()" style="margin-top: 24px;">Add User</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- EDIT USER MODAL -->
+    <div id="edit-user-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header"><h2>Edit Employee</h2><button class="close-btn" onclick="closeEditUserModal()"><i class="fa-solid fa-xmark"></i></button></div>
+            <form id="editUserForm">
+                <input type="hidden" id="editEmpId">
+                <div class="form-group"><label>Full Name</label><input type="text" id="editEmpName" class="form-control" required></div>
+                <div class="form-group"><label>Department</label><input type="text" id="editEmpDept" class="form-control" required></div>
+                <div class="form-group"><label>Assign Role</label><select id="editEmpRole" class="form-control" required><option value="2">Evaluator</option><option value="3">Employee</option><option value="1">Administrator</option></select></div>
+                <div class="form-group"><label>Status</label><select id="editEmpStatus" class="form-control" required><option value="Active">Active</option><option value="On Leave">On Leave</option><option value="Inactive">Inactive</option></select></div>
+                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                    <button type="button" class="btn-block" onclick="submitEditUser()" style="flex: 2;">Update User</button>
+                    <button type="button" class="btn-block" onclick="deleteEmployee()" style="flex: 1; background-color: #ef4444; border-color: #ef4444;"><i class="fa-solid fa-trash"></i> Delete</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ADD CRITERIA MODAL -->
+    <div id="add-criteria-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header"><h2>Add Evaluation Criteria</h2><button class="close-btn" onclick="closeAddCriteriaModal()"><i class="fa-solid fa-xmark"></i></button></div>
+            <form id="addCriteriaForm">
+                <div class="form-group"><label>Criteria Name</label><input type="text" id="criteriaNameInput" class="form-control" placeholder="e.g. Communication Skills" required></div>
+                <div class="form-group"><label>Impact (1–5)</label><select id="criteriaImpactInput" class="form-control" required><option value="" disabled selected>Select impact level...</option><option value="5">5 - Highest level</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1 - Lowest level</option></select></div>
+                <div class="form-group"><label>Description</label><textarea id="criteriaDescInput" class="form-control" rows="3" placeholder="Explain what this criteria evaluates..."></textarea></div>
+                <p class="assign-placeholder">The percentage distribution is calculated automatically from the impact levels of all active criteria.</p>
+                <button type="button" class="btn-block" onclick="submitAddCriteria()" style="margin-top: 24px;">Save Criteria</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- EDIT CRITERIA MODAL -->
+    <div id="edit-criteria-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header"><h2>Edit Evaluation Criteria</h2><button class="close-btn" onclick="closeEditCriteriaModal()"><i class="fa-solid fa-xmark"></i></button></div>
+            <form id="editCriteriaForm">
+                <input type="hidden" id="editCriteriaId">
+                <div class="form-group"><label>Criteria Name</label><input type="text" id="editCriteriaName" class="form-control" required></div>
+                <div class="form-group"><label>Impact (1–5)</label><select id="editCriteriaImpact" class="form-control" required><option value="5">5 - Highest level</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1 - Lowest level</option></select></div>
+                <div class="form-group"><label>Description</label><textarea id="editCriteriaDesc" class="form-control" rows="3"></textarea></div>
+                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                    <button type="button" class="btn-block" onclick="submitEditCriteria()" style="flex: 2;">Update Criteria</button>
+                    <button type="button" class="btn-block" onclick="deleteCriteriaFromModal()" style="flex: 1; background-color: #ef4444; border-color: #ef4444;"><i class="fa-solid fa-trash"></i> Delete</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ASSIGN EVALUATION TASK MODAL -->
+    <div id="assign-task-modal" class="modal-overlay">
+        <div class="modal-content assign-task-modal-content">
+            <div class="modal-header">
+                <div><h2>Assign Evaluation Task</h2><p class="assign-placeholder" style="margin-top:4px;">Evaluators and employees are matched by department automatically.</p></div>
+                <button class="close-btn" onclick="closeAssignTaskModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="assignTaskForm">
+                <div class="assign-task-grid">
+                    <section class="assign-column">
+                        <div class="assign-column-header"><i class="fa-solid fa-user-tie"></i> Evaluators</div>
+                        <div class="assign-panel-body">
+                            <input type="search" id="evaluatorSearchInput" class="form-control assign-search" placeholder="Search evaluator..." oninput="renderEvaluatorList()">
+                            <select id="evaluatorDepartmentFilter" class="form-control assign-filter" onchange="renderEvaluatorList(); renderEmployeeList();">
+                                <option value="all">All Departments</option>
+                            </select>
+                            <label class="select-all-row"><input type="checkbox" id="selectAllEvaluators" onchange="toggleAllEvaluators(this.checked)"> <span>Select all evaluators</span></label>
+                            <div id="evaluatorList" class="checkbox-list-scroll assign-main-list"></div>
+                        </div>
+                    </section>
+
+                    <section class="assign-column">
+                        <div class="assign-column-header"><i class="fa-solid fa-users"></i> Employees</div>
+                        <div class="assign-panel-body">
+                            <input type="search" id="employeeSearchInput" class="form-control assign-search" placeholder="Search employee..." oninput="renderEmployeeList()">
+                            <div class="assign-filter-note"><i class="fa-solid fa-filter"></i> Employees are shown for the department(s) selected on the evaluator side.</div>
+                            <label class="select-all-row"><input type="checkbox" id="selectAllEmployees" onchange="toggleAllEmployees(this.checked)"> <span>Select all employees</span></label>
+                            <div id="employeeList" class="checkbox-list-scroll assign-main-list"></div>
+                        </div>
+                    </section>
+
+                    <section class="assign-column">
+                        <div class="assign-column-header"><i class="fa-solid fa-calendar-check"></i> Evaluation Details</div>
+                        <div class="assign-panel-body">
+                            <div class="form-group"><label>Evaluation Month</label><select id="assignMonthSelect" class="form-control" required></select></div>
+                            <div class="form-group"><label>Evaluation Year</label><select id="assignYearSelect" class="form-control" required></select></div>
+                            <div class="assign-detail-box"><strong>Evaluation window</strong><span>Evaluators may perform evaluations only during the final 7 days of the selected month.</span></div>
+                            <div class="assign-validation" id="assignmentValidationMessage">Select at least one evaluator and one employee.</div>
+                            <button type="button" class="btn-block" onclick="submitNewTask()" style="margin-top: 18px;"><i class="fa-solid fa-check"></i> Assign Task(s)</button>
+                        </div>
+                    </section>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- EDIT ASSIGN TASK MODAL -->
+    <div id="edit-assignment-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Task Assignment</h2>
+                <button class="close-btn" onclick="closeEditAssignmentModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="editAssignmentForm">
+                <input type="hidden" id="editAssignId">
+                <div class="form-group">
+                    <label>Evaluator (Manager)</label>
+                    <select id="editAssignEvaluator" class="form-control" required>
+                        <option value="" disabled selected>Loading...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Subject (Employee)</label>
+                    <select id="editAssignEmployee" class="form-control" required>
+                        <option value="" disabled selected>Loading...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Evaluation Period</label>
+                    <input type="text" id="editAssignPeriod" class="form-control" placeholder="e.g. September 2026" required>
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="editAssignStatus" class="form-control" required>
+                        <option value="Pending">Pending</option>
+                        <option value="Completed">Completed</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                    <button type="button" class="btn-block" onclick="submitEditAssignment()" style="flex: 2;">Update Task</button>
+                    <button type="button" class="btn-block" onclick="deleteAssignmentFromModal()" style="flex: 1; background-color: #ef4444; border-color: #ef4444;"><i class="fa-solid fa-trash"></i> Delete</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- THIS LINKS TO YOUR SEPARATE JAVASCRIPT FILE -->
+    <script src="script.js"></script>
+</body>
+</html>

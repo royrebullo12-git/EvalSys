@@ -1,0 +1,1783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EvalSys - Employee</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* === MODERN CSS VARIABLES === */
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --primary-light: #e0e7ff;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --background: #f8fafc;
+            --surface: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text-main);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* =========================================
+           LOGIN SCREEN STYLES
+           ========================================= */
+        #login-screen {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
+        }
+
+        .login-card {
+            background-color: var(--surface);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .login-brand {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .login-subtitle {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 32px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            background-color: white;
+            transition: border-color 0.2s;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+        
+        select.form-control {
+            cursor: pointer;
+            appearance: auto;
+        }
+
+        .btn-block {
+            width: 100%;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn-block:hover { background-color: var(--primary-hover); }
+
+        /* =========================================
+           DASHBOARD LAYOUT STYLES
+           ========================================= */
+        #main-dashboard {
+            display: none; /* Hidden until login */
+            height: 100vh;
+            width: 100vw;
+        }
+
+        .sidebar {
+            width: 260px;
+            background-color: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 24px 16px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 40px;
+            padding-left: 12px;
+        }
+
+        .nav-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            padding-left: 12px;
+            margin-top: 24px;
+        }
+        .nav-label:first-of-type { margin-top: 0; }
+
+        .nav-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .nav-item:hover {
+            background-color: var(--background);
+            color: var(--text-main);
+        }
+
+        .nav-item.active {
+            background-color: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .top-header {
+            height: 72px;
+            background-color: var(--surface);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+        }
+
+        .header-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            overflow: hidden;
+        }
+
+        .dashboard-container {
+            padding: 32px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Role-specific sections */
+        .role-view, .role-nav { display: none; }
+        .role-view.active, .role-nav.active { display: block; }
+        
+        /* Sub-Sections for functionality */
+        .admin-section, .evaluator-section, .employee-section { display: none; }
+        .admin-section.active, .evaluator-section.active, .employee-section.active { display: block; }
+
+        /* =========================================
+           COMPONENT STYLES (Cards, Tables, etc.)
+           ========================================= */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        }
+
+        .stat-info p {
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .stat-info h3 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background-color: var(--primary-light);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .table-section {
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+            overflow: hidden;
+            margin-bottom: 32px;
+        }
+
+        .table-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-header h2 { font-size: 16px; font-weight: 600; }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        table { width: 100%; border-collapse: collapse; }
+        
+        th {
+            background-color: #f8fafc;
+            text-align: left;
+            padding: 12px 24px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 16px 24px;
+            font-size: 14px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-main);
+        }
+
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background-color: #f8fafc; }
+
+        .badge {
+            background-color: #e2e8f0;
+            color: var(--text-main);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .badge-success { background-color: #d1fae5; color: #065f46; }
+        .badge-warning { background-color: #fef3c7; color: #92400e; }
+        .badge-info { background-color: #e0f2fe; color: #0369a1; }
+        .badge-orange { background-color: #ffedd5; color: #9a3412; }
+        .badge-danger { background-color: #fee2e2; color: #991b1b; }
+
+        .action-icon {
+            color: var(--text-muted);
+            cursor: pointer;
+            margin-right: 12px;
+            transition: color 0.2s;
+        }
+        .action-icon:hover { color: var(--primary); }
+        
+        .score-display {
+            font-size: 48px;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 10px 0;
+        }
+
+        /* =========================================
+           MODAL (POPUP) STYLES
+           ========================================= */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(15, 23, 42, 0.6);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .modal-content {
+            background-color: var(--surface);
+            width: 100%;
+            max-width: 500px;
+            border-radius: var(--radius);
+            padding: 32px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 16px;
+        }
+
+        .modal-header h2 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .close-btn:hover { color: var(--text-main); }
+
+        /* =========================================
+           TABLE SCROLL WRAPPER (prevents tables from
+           breaking the page layout on narrow screens)
+           ========================================= */
+        .table-scroll {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .table-scroll table { min-width: 640px; }
+
+        /* =========================================
+           MOBILE MENU TOGGLE + OVERLAY
+           (hidden on desktop, shown via media query)
+           ========================================= */
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: var(--text-main);
+            cursor: pointer;
+            padding: 8px;
+            margin-right: 12px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background-color: rgba(15, 23, 42, 0.5);
+            z-index: 998;
+        }
+
+        /* =========================================
+           RESPONSIVE LAYOUT (tablet & mobile)
+           ========================================= */
+        @media (max-width: 900px) {
+            #main-dashboard { position: relative; }
+
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                bottom: 0;
+                z-index: 999;
+                transform: translateX(-100%);
+                transition: transform 0.25s ease;
+                box-shadow: 4px 0 16px rgba(0,0,0,0.15);
+            }
+
+            #main-dashboard.sidebar-open .sidebar {
+                transform: translateX(0);
+            }
+
+            #main-dashboard.sidebar-open .sidebar-overlay {
+                display: block;
+            }
+
+            .menu-toggle { display: flex; align-items: center; justify-content: center; }
+
+            .main-content { width: 100%; }
+
+            .top-header { padding: 0 16px; }
+
+            .dashboard-container { padding: 20px 16px; }
+
+            .stats-grid { grid-template-columns: 1fr; gap: 16px; }
+
+            .table-header { flex-wrap: wrap; gap: 12px; }
+
+            .modal-content { max-width: 92vw; padding: 24px; }
+
+            .assign-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 480px) {
+            .user-profile span { display: none; }
+            .header-title { font-size: 17px; }
+            .login-card { padding: 28px 20px; }
+        }
+
+        /* =========================================
+           ACCORDION (self-contained, Bootstrap-style
+           interaction — expand/collapse on click)
+           ========================================= */
+        .accordion {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            background-color: var(--surface);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        }
+
+        .accordion-button {
+            width: 100%;
+            text-align: left;
+            background: var(--surface);
+            border: none;
+            padding: 20px 24px;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-main);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .accordion-button:hover { background-color: var(--background); }
+
+        .accordion-button .accordion-icon {
+            color: var(--text-muted);
+            transition: transform 0.25s ease;
+        }
+
+        .accordion-button.active .accordion-icon {
+            transform: rotate(180deg);
+            color: var(--primary);
+        }
+
+        .accordion-collapse {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .accordion-collapse.show { max-height: 500px; }
+
+        .accordion-body {
+            padding: 0 24px 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        /* =========================================
+           FILTER PILL BUTTONS (Evaluation History)
+           ========================================= */
+        .filter-btn {
+            padding: 6px 16px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background-color: var(--surface);
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .filter-btn:hover { background-color: var(--background); color: var(--text-main); }
+
+        .filter-btn.active {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            color: #ffffff;
+        }
+
+        /* =========================================
+           ASSIGN EVALUATIONS PANEL
+           (Assign by Employee / Assign by Evaluator)
+           ========================================= */
+        .assign-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            padding: 24px;
+        }
+
+        .assign-column {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background-color: var(--surface);
+        }
+
+        .assign-column-header {
+            background-color: var(--background);
+            padding: 14px 18px;
+            font-size: 14px;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-main);
+        }
+
+        /* Scrollable "rectangle" list of employees / evaluators */
+        .assign-list-scroll {
+            max-height: 220px;
+            overflow-y: auto;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .assign-item {
+            padding: 12px 18px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            transition: background-color 0.15s;
+        }
+        .assign-item:last-child { border-bottom: none; }
+        .assign-item:hover { background-color: var(--background); }
+        .assign-item.active { background-color: var(--primary-light); color: var(--primary); }
+
+        .assign-detail {
+            padding: 16px 18px;
+        }
+
+        .assign-detail-title {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+
+        .select-all-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+
+        .checkbox-list-scroll {
+            max-height: 160px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            padding: 6px 4px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .checkbox-row:hover { background-color: var(--background); }
+
+        .assign-placeholder {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-style: italic;
+            padding: 8px 0;
+        }
+
+        /* =========================================
+           RATING SCALE DEFINITIONS (legend)
+           ========================================= */
+        .rating-legend-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 12px 4px;
+            border-bottom: 1px solid var(--border);
+        }
+        .rating-legend-row:last-child { border-bottom: none; }
+
+        .rating-legend-num {
+            flex: 0 0 auto;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        /* Per-column filters for the Assigned Tasks table */
+        .filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            background-color: var(--background);
+            align-items: flex-end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 160px;
+        }
+
+        .filter-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .filter-select {
+            padding: 8px 12px;
+            font-size: 13px;
+        }
+
+        /* Fixed-size scrollable assigned tasks table */
+        .fixed-scroll-table {
+            max-height: 320px;
+            overflow-y: auto;
+        }
+
+        .fixed-scroll-table thead th {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        /* Requested admin-management additions */
+        .disabled-action {
+            color: #cbd5e1;
+            cursor: not-allowed;
+            margin-right: 12px;
+        }
+
+        .archive-action {
+            color: var(--text-muted);
+            cursor: pointer;
+            margin-right: 12px;
+            transition: color 0.2s;
+        }
+
+        .archive-action:hover { color: var(--warning); }
+
+        .archive-icon {
+            position: relative;
+            display: inline-flex;
+            width: 20px;
+            height: 20px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .archive-icon .archive-arrow {
+            position: absolute;
+            top: -4px;
+            left: 7px;
+            font-size: 9px;
+        }
+
+        .archive-img {
+            width: 22px;
+            height: 22px;
+            object-fit: contain;
+            vertical-align: middle;
+        }
+
+
+        .archive-action.unarchive { color: var(--success); }
+        .archive-action.unarchive:hover { color: #059669; }
+
+        .danger-modal-text {
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text-muted);
+            margin-bottom: 18px;
+        }
+
+        .warning-box {
+            background: #fff7ed;
+            border: 1px solid #fed7aa;
+            color: #9a3412;
+            border-radius: 8px;
+            padding: 12px 14px;
+            font-size: 13px;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .btn-secondary {
+            background: var(--surface);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-secondary:hover { background: var(--background); }
+
+        .btn-outline {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--surface);
+            color: var(--primary);
+            border: 1px solid var(--primary-light);
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.15s, border-color 0.15s;
+        }
+
+        .btn-outline:hover {
+            background-color: var(--primary-light);
+            border-color: var(--primary);
+        }
+
+        .btn-outline i { font-size: 12px; }
+
+        .assign-dept-filter {
+            padding: 12px 18px;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface);
+        }
+
+        .assign-dept-filter label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+        /* =========================================
+           EVALUATOR EXPERIENCE — REBUILT
+           Scoped to evaluator dashboard/components
+           ========================================= */
+        .evaluator-home-grid {
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+            gap:18px;
+            margin-bottom:24px;
+        }
+        .evaluator-stat-card {
+            background:var(--surface);
+            border:1px solid var(--border);
+            border-radius:var(--radius);
+            padding:20px;
+            min-height:132px;
+            
+            box-shadow:0 1px 2px rgba(0,0,0,0.02);
+            display:flex;
+            align-items:flex-start;
+            justify-content:space-between;
+            gap:14px;
+        }
+        .evaluator-stat-card .kicker { color:var(--text-muted); font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.4px; margin-bottom:7px; }
+        .evaluator-stat-card h3 { font-size:26px; line-height:1.15; margin-bottom:5px; }
+        .evaluator-stat-card .support { color:var(--text-muted); font-size:12px; line-height:1.45; }
+        .evaluator-stat-icon {
+            width:42px; height:42px; border-radius:11px; background:var(--primary-light); color:var(--primary);
+            display:flex; align-items:center; justify-content:center; flex:0 0 auto;
+        }
+        .evaluator-banner {
+            display:flex; align-items:center; justify-content:space-between; gap:16px;
+            padding:18px 20px; border:1px solid var(--border); border-radius:var(--radius);
+            background:linear-gradient(135deg,#ffffff 0%,#f8fafc 100%); margin-bottom:24px;
+        }
+        .evaluator-banner-title { font-size:18px; font-weight:700; margin-bottom:4px; }
+        .evaluator-banner-sub { font-size:13px; color:var(--text-muted); }
+        .evaluator-chip-row { display:flex; flex-wrap:wrap; gap:8px; }
+        .criteria-highlight { margin-bottom:24px; }
+        .criteria-cards { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; padding:20px 24px 24px; }
+        .criteria-card { border:1px solid var(--border); border-radius:10px; padding:16px; background:var(--background); }
+        .criteria-card .criteria-top { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:9px; }
+        .criteria-card h4 { font-size:14px; }
+        .criteria-card p { color:var(--text-muted); font-size:12px; line-height:1.5; }
+        .criteria-version { font-size:11px; color:var(--text-muted); padding:0 24px 16px; }
+        .evaluator-section-intro { margin-bottom:18px; color:var(--text-muted); font-size:13px; line-height:1.55; }
+        .history-toolbar { display:flex; flex-wrap:wrap; gap:10px; align-items:center; padding:16px 24px; border-bottom:1px solid var(--border); background:var(--background); }
+        .history-filter-wrap { display:flex; gap:8px; flex-wrap:wrap; }
+        .history-select-wrap { display:flex; gap:8px; flex-wrap:wrap; margin-left:auto; }
+        .history-select-wrap .form-control { min-width:150px; width:auto; }
+        .evaluator-empty { padding:34px 24px; text-align:center; color:var(--text-muted); }
+        .deadline-badge { display:inline-flex; align-items:center; gap:6px; padding:5px 9px; border-radius:999px; background:#fff7ed; color:#9a3412; font-size:11px; font-weight:700; }
+        .countdown-value { font-variant-numeric:tabular-nums; }
+        .modal-content.evaluator-modal { max-width:1080px; width:calc(100vw - 56px); max-height:90vh; overflow:auto; padding:0; }
+        .evaluator-modal .modal-header { padding:22px 28px 16px; margin-bottom:0; position:sticky; top:0; background:var(--surface); z-index:2; }
+        .eval-modal-body { padding:24px 28px 28px; }
+        .eval-subject-card { display:flex; align-items:center; justify-content:space-between; gap:18px; padding:18px; border:1px solid var(--border); border-radius:12px; background:var(--background); margin-bottom:20px; }
+        .eval-subject-main { display:flex; align-items:center; gap:12px; }
+        .eval-subject-avatar { width:50px; height:50px; border-radius:14px; background:var(--primary-light); color:var(--primary); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:17px; overflow:hidden; }
+        .eval-subject-main h3 { font-size:18px; margin-bottom:4px; }
+        .eval-subject-main p { font-size:12px; color:var(--text-muted); }
+        .criteria-eval-grid { display:grid; grid-template-columns:1fr; gap:16px; }
+        .criteria-eval-card { border:1px solid var(--border); border-radius:12px; padding:18px; }
+        .criteria-eval-header { display:flex; justify-content:space-between; gap:16px; align-items:flex-start; margin-bottom:10px; }
+        .criteria-eval-header h4 { font-size:15px; margin-bottom:4px; }
+        .criteria-eval-header p { font-size:12px; color:var(--text-muted); line-height:1.5; max-width:760px; }
+        .rating-options { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:8px; margin-top:14px; }
+        .rating-option { position:relative; }
+        .rating-option input { position:absolute; opacity:0; pointer-events:none; }
+        .rating-option label { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:68px; padding:9px 7px; border:1px solid var(--border); border-radius:9px; background:var(--surface); cursor:pointer; text-align:center; transition:all .15s ease; }
+        .rating-option label strong { font-size:16px; color:var(--text-main); }
+        .rating-option label span { font-size:10px; color:var(--text-muted); margin-top:4px; line-height:1.2; }
+        .rating-option input:checked + label { border-color:var(--primary); background:var(--primary-light); box-shadow:0 0 0 2px rgba(79,70,229,.10); }
+        .rating-option input:focus-visible + label { outline:2px solid var(--primary); outline-offset:2px; }
+        .score-preview { display:grid; grid-template-columns:1fr 260px; gap:16px; margin-top:20px; }
+        .score-breakdown { border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+        .score-breakdown table th, .score-breakdown table td { padding:11px 14px; }
+        .total-score-card { border:1px solid var(--primary-light); border-radius:12px; background:linear-gradient(135deg,#eef2ff 0%,#ffffff 100%); padding:20px; display:flex; flex-direction:column; justify-content:center; }
+        .total-score-card p { color:var(--text-muted); font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.4px; }
+        .total-score-card strong { font-size:38px; line-height:1; color:var(--primary); margin:9px 0 6px; }
+        .total-score-card span { font-size:12px; color:var(--text-muted); }
+        .eval-modal-footer { display:flex; justify-content:flex-end; gap:10px; padding-top:20px; margin-top:20px; border-top:1px solid var(--border); }
+        .score-legend { margin-top:10px; font-size:11px; color:var(--text-muted); }
+        .history-score { font-weight:700; color:var(--primary); }
+
+        @media (max-width: 1100px) {
+            .evaluator-home-grid { grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); }
+            .criteria-cards { grid-template-columns:1fr; }
+            .score-preview { grid-template-columns:1fr; }
+        }
+        @media (max-width: 720px) {
+            .evaluator-home-grid { grid-template-columns:1fr; }
+            .evaluator-banner { align-items:flex-start; flex-direction:column; }
+            .employee-select-item { grid-template-columns:auto 1fr; }
+            .employee-select-item > .badge, .employee-select-item > button { grid-column:2; justify-self:start; }
+            .history-select-wrap { margin-left:0; width:100%; }
+            .history-select-wrap .form-control { flex:1; min-width:0; }
+            .modal-content.evaluator-modal { width:calc(100vw - 20px); max-height:94vh; }
+            .eval-modal-body { padding:18px; }
+            .evaluator-modal .modal-header { padding:18px; }
+            .rating-options { grid-template-columns:1fr 1fr; }
+            .eval-subject-card { flex-direction:column; align-items:flex-start; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ==============================================
+         MAIN DASHBOARD LAYOUT (Employee)
+         ============================================== -->
+    <div id="main-dashboard" style="display:flex;">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="brand">
+                <i class="fa-solid fa-chart-pie"></i> EvalSys
+            </div>
+
+            <div id="nav-employee" class="role-nav active">
+                <div class="nav-label">My Profile</div>
+                <ul class="nav-list">
+                    <li class="nav-item active" onclick="switchEmployeeView('employee-dashboard', this)">
+                        <i class="fa-solid fa-house"></i> Dashboard
+                    </li>
+                    <li class="nav-item" onclick="switchEmployeeView('employee-history', this)">
+                        <i class="fa-solid fa-clock-rotate-left"></i> Evaluation History
+                    </li>
+                    <li class="nav-item" onclick="switchEmployeeView('employee-awards', this)">
+                        <i class="fa-solid fa-award"></i> Awards Received
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Universal Logout Button -->
+            <ul class="nav-list" style="margin-top: auto;">
+                <li class="nav-item" onclick="window.location.href='login.html'" style="color: #ef4444;">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out
+                </li>
+            </ul>
+        </aside>
+
+        <div class="sidebar-overlay" onclick="closeMobileMenu()"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-left">
+                    <button class="menu-toggle" onclick="toggleMobileMenu()" aria-label="Toggle menu"><i class="fa-solid fa-bars"></i></button>
+                    <div class="header-title" id="dashboard-title">My Employee Dashboard</div>
+                </div>
+                <div class="user-profile" style="cursor:pointer;" onclick="document.getElementById('profile-modal').style.display='flex'">
+                    <span id="user-name-display">Employee User</span>
+                    <div class="avatar">EU</div>
+                </div>
+            </header>
+
+            <div class="dashboard-container">
+                <div id="view-employee" class="role-view active">
+
+                    <div id="employee-dashboard" class="employee-section active">
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-info">
+                                    <p>Most Recent Evaluation</p>
+                                    <h3>88.50 <span style="font-size:14px; font-weight:500; color: var(--text-muted);">/ 100</span></h3>
+                                    <span class="badge badge-success" style="margin-top:8px; display:inline-block;">Meets Expectations · July 2026</span>
+                                </div>
+                                <div class="stat-icon"><i class="fa-solid fa-chart-line"></i></div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-info">
+                                    <p>Current Period Status</p>
+                                    <h3 style="font-size: 20px;">August 2026</h3>
+                                    <span class="badge badge-warning" style="margin-top:8px; display:inline-block;">Pending Evaluation</span>
+                                </div>
+                                <div class="stat-icon"><i class="fa-solid fa-hourglass-half"></i></div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-info">
+                                    <p>Evaluations Completed</p>
+                                    <h3>6</h3>
+                                    <span class="badge" style="margin-top:8px; display:inline-block;">Since January 2026</span>
+                                </div>
+                                <div class="stat-icon"><i class="fa-solid fa-clipboard-check"></i></div>
+                            </div>
+                        </div>
+
+                        <!-- Current Evaluation Criteria — mirrors the evaluator dashboard so employees are notified of any changes -->
+                        <div class="table-section criteria-highlight">
+                            <div class="table-header">
+                                <div>
+                                    <h2>Current Evaluation Criteria</h2>
+                                    <p style="font-size:12px; color:var(--text-muted); margin-top:4px;">These are the criteria and weights your evaluations are currently scored against.</p>
+                                </div>
+                                <span class="badge badge-info">Current Version · 2026</span>
+                            </div>
+                            <div class="criteria-cards">
+                                <div class="criteria-card">
+                                    <div class="criteria-top"><h4>Quality of Work</h4><span class="badge">50%</span></div>
+                                    <p>Measures the accuracy, completeness, consistency, and standard of your work output.</p>
+                                </div>
+                                <div class="criteria-card">
+                                    <div class="criteria-top"><h4>Designation Competence</h4><span class="badge">30%</span></div>
+                                    <p>Measures how effectively you perform the responsibilities and skills required by your designation.</p>
+                                </div>
+                                <div class="criteria-card">
+                                    <div class="criteria-top"><h4>Attendance</h4><span class="badge">20%</span></div>
+                                    <p>Measures attendance, punctuality, and consistency in reporting for scheduled work.</p>
+                                </div>
+                            </div>
+                            <div class="criteria-version"><i class="fa-solid fa-bell" style="color:var(--primary);"></i> Any changes to the criteria or score computation made by an administrator are reflected here automatically.</div>
+                        </div>
+                    </div>
+
+                    <div id="employee-history" class="employee-section">
+                        <div class="table-section">
+                            <div class="table-header">
+                                <h2>My Evaluation History</h2>
+                            </div>
+                            <p style="font-size: 12px; color: var(--text-muted); padding: 10px 24px 16px;"><i class="fa-solid fa-lock" style="color: var(--primary);"></i> Evaluator identity is kept anonymous — only the evaluation result is shown to you.</p>
+
+                            <!-- Per-column filters, same pattern as Admin > Assign Evaluations > Evaluation Task Assignments -->
+                            <div class="filter-bar">
+                                <div class="filter-group">
+                                    <label>Period</label>
+                                    <select class="form-control filter-select" id="historyFilterPeriod" onchange="filterHistoryTable()">
+                                        <option value="all">All</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label>Type</label>
+                                    <select class="form-control filter-select" id="historyFilterType" onchange="filterHistoryTable()">
+                                        <option value="all">All</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label>Rating</label>
+                                    <select class="form-control filter-select" id="historyFilterRating" onchange="filterHistoryTable()">
+                                        <option value="all">All</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label>Status</label>
+                                    <select class="form-control filter-select" id="historyFilterStatus" onchange="filterHistoryTable()">
+                                        <option value="all">All</option>
+                                    </select>
+                                </div>
+                                <button class="btn-primary" style="align-self:flex-end;" onclick="clearHistoryFilters()">
+                                    <i class="fa-solid fa-rotate-left"></i> Clear
+                                </button>
+                            </div>
+                            <!-- Total Score has no dropdown (numeric, not a fixed set of values) and Action isn't data to filter on -->
+
+                            <div class="table-scroll fixed-scroll-table"><table>
+                                <thead>
+                                    <tr>
+                                        <th>Period</th>
+                                        <th>Type</th>
+                                        <th>Total Score</th>
+                                        <th>Rating</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="employee-history-body">
+                                    <tr data-period="August 2026" data-type="Monthly" data-rating="Pending" data-status="Pending">
+                                        <td><strong>August 2026</strong></td>
+                                        <td><span class="badge" style="background-color:#fef3c7; color:#92400e;">Monthly</span></td>
+                                        <td style="color: var(--text-muted);">--</td>
+                                        <td style="color: var(--text-muted);">--</td>
+                                        <td><span class="badge badge-warning">Pending</span></td>
+                                        <td style="color: var(--text-muted);">Not yet available</td>
+                                    </tr>
+                                    <tr data-period="July 2026" data-type="Monthly" data-rating="Exceeds Expectations" data-status="Completed">
+                                        <td><strong>July 2026</strong></td>
+                                        <td><span class="badge" style="background-color:#fef3c7; color:#92400e;">Monthly</span></td>
+                                        <td><strong>88.50</strong></td>
+                                        <td><span class="badge badge-success">Exceeds Expectations</span></td>
+                                        <td><span class="badge badge-success">Completed</span></td>
+                                        <td><button class="btn-primary" style="padding: 8px 16px;" onclick="viewBreakdownPage('July 2026', '88.50', 'Monthly')">View Breakdown</button></td>
+                                    </tr>
+                                    <tr data-period="June 2026" data-type="Monthly" data-rating="Meets Expectations" data-status="Completed">
+                                        <td><strong>June 2026</strong></td>
+                                        <td><span class="badge" style="background-color:#fef3c7; color:#92400e;">Monthly</span></td>
+                                        <td><strong>82.00</strong></td>
+                                        <td><span class="badge badge-info">Meets Expectations</span></td>
+                                        <td><span class="badge badge-success">Completed</span></td>
+                                        <td><button class="btn-primary" style="padding: 8px 16px;" onclick="viewBreakdownPage('June 2026', '82.00', 'Monthly')">View Breakdown</button></td>
+                                    </tr>
+                                    <tr data-period="May 2026" data-type="Monthly" data-rating="Meets Expectations" data-status="Completed">
+                                        <td><strong>May 2026</strong></td>
+                                        <td><span class="badge" style="background-color:#fef3c7; color:#92400e;">Monthly</span></td>
+                                        <td><strong>79.50</strong></td>
+                                        <td><span class="badge badge-info">Meets Expectations</span></td>
+                                        <td><span class="badge badge-success">Completed</span></td>
+                                        <td><button class="btn-primary" style="padding: 8px 16px;" onclick="viewBreakdownPage('May 2026', '79.50', 'Monthly')">View Breakdown</button></td>
+                                    </tr>
+                                    <tr data-period="April 2026" data-type="Monthly" data-rating="Exceeds Expectations" data-status="Completed">
+                                        <td><strong>April 2026</strong></td>
+                                        <td><span class="badge" style="background-color:#fef3c7; color:#92400e;">Monthly</span></td>
+                                        <td><strong>85.00</strong></td>
+                                        <td><span class="badge badge-success">Exceeds Expectations</span></td>
+                                        <td><span class="badge badge-success">Completed</span></td>
+                                        <td><button class="btn-primary" style="padding: 8px 16px;" onclick="viewBreakdownPage('April 2026', '85.00', 'Monthly')">View Breakdown</button></td>
+                                    </tr>
+                                    <tr data-period="March 2026" data-type="Monthly" data-rating="Meets Expectations" data-status="Completed">
+                                        <td><strong>March 2026</strong></td>
+                                        <td><span class="badge" style="background-color:#fef3c7; color:#92400e;">Monthly</span></td>
+                                        <td><strong>81.00</strong></td>
+                                        <td><span class="badge badge-info">Meets Expectations</span></td>
+                                        <td><span class="badge badge-success">Completed</span></td>
+                                        <td><button class="btn-primary" style="padding: 8px 16px;" onclick="viewBreakdownPage('March 2026', '81.00', 'Monthly')">View Breakdown</button></td>
+                                    </tr>
+                                    <tr data-period="February 2026" data-type="Monthly" data-rating="Meets Expectations" data-status="Completed">
+                                        <td><strong>February 2026</strong></td>
+                                        <td><span class="badge" style="background-color:#fef3c7; color:#92400e;">Monthly</span></td>
+                                        <td><strong>83.00</strong></td>
+                                        <td><span class="badge badge-info">Meets Expectations</span></td>
+                                        <td><span class="badge badge-success">Completed</span></td>
+                                        <td><button class="btn-primary" style="padding: 8px 16px;" onclick="viewBreakdownPage('February 2026', '83.00', 'Monthly')">View Breakdown</button></td>
+                                    </tr>
+                                    <tr data-period="January 2026" data-type="Monthly" data-rating="Meets Expectations" data-status="Completed">
+                                        <td><strong>January 2026</strong></td>
+                                        <td><span class="badge" style="background-color:#fef3c7; color:#92400e;">Monthly</span></td>
+                                        <td><strong>80.50</strong></td>
+                                        <td><span class="badge badge-info">Meets Expectations</span></td>
+                                        <td><span class="badge badge-success">Completed</span></td>
+                                        <td><button class="btn-primary" style="padding: 8px 16px;" onclick="viewBreakdownPage('January 2026', '80.50', 'Monthly')">View Breakdown</button></td>
+                                    </tr>
+                                    <tr data-period="December 2025" data-type="Monthly" data-rating="Exceeds Expectations" data-status="Completed">
+                                        <td><strong>December 2025</strong></td>
+                                        <td><span class="badge" style="background-color:#fef3c7; color:#92400e;">Monthly</span></td>
+                                        <td><strong>86.00</strong></td>
+                                        <td><span class="badge badge-success">Exceeds Expectations</span></td>
+                                        <td><span class="badge badge-success">Completed</span></td>
+                                        <td><button class="btn-primary" style="padding: 8px 16px;" onclick="viewBreakdownPage('December 2025', '86.00', 'Monthly')">View Breakdown</button></td>
+                                    </tr>
+                                    <tr data-period="November 2025" data-type="Monthly" data-rating="Meets Expectations" data-status="Completed">
+                                        <td><strong>November 2025</strong></td>
+                                        <td><span class="badge" style="background-color:#fef3c7; color:#92400e;">Monthly</span></td>
+                                        <td><strong>84.00</strong></td>
+                                        <td><span class="badge badge-info">Meets Expectations</span></td>
+                                        <td><span class="badge badge-success">Completed</span></td>
+                                        <td><button class="btn-primary" style="padding: 8px 16px;" onclick="viewBreakdownPage('November 2025', '84.00', 'Monthly')">View Breakdown</button></td>
+                                    </tr>
+                                    <tr data-period="October 2025" data-type="Monthly" data-rating="Meets Expectations" data-status="Completed">
+                                        <td><strong>October 2025</strong></td>
+                                        <td><span class="badge" style="background-color:#fef3c7; color:#92400e;">Monthly</span></td>
+                                        <td><strong>82.00</strong></td>
+                                        <td><span class="badge badge-info">Meets Expectations</span></td>
+                                        <td><span class="badge badge-success">Completed</span></td>
+                                        <td><button class="btn-primary" style="padding: 8px 16px;" onclick="viewBreakdownPage('October 2025', '82.00', 'Monthly')">View Breakdown</button></td>
+                                    </tr>
+                                    <tr data-period="September 2025" data-type="Monthly" data-rating="Meets Expectations" data-status="Completed">
+                                        <td><strong>September 2025</strong></td>
+                                        <td><span class="badge" style="background-color:#fef3c7; color:#92400e;">Monthly</span></td>
+                                        <td><strong>77.00</strong></td>
+                                        <td><span class="badge badge-info">Meets Expectations</span></td>
+                                        <td><span class="badge badge-success">Completed</span></td>
+                                        <td><button class="btn-primary" style="padding: 8px 16px;" onclick="viewBreakdownPage('September 2025', '77.00', 'Monthly')">View Breakdown</button></td>
+                                    </tr>
+                                    <tr data-period="August 2025" data-type="Monthly" data-rating="Exceeds Expectations" data-status="Completed">
+                                        <td><strong>August 2025</strong></td>
+                                        <td><span class="badge" style="background-color:#fef3c7; color:#92400e;">Monthly</span></td>
+                                        <td><strong>85.50</strong></td>
+                                        <td><span class="badge badge-success">Exceeds Expectations</span></td>
+                                        <td><span class="badge badge-success">Completed</span></td>
+                                        <td><button class="btn-primary" style="padding: 8px 16px;" onclick="viewBreakdownPage('August 2025', '85.50', 'Monthly')">View Breakdown</button></td>
+                                    </tr>
+                                    <tr data-period="July 2025" data-type="Monthly" data-rating="Meets Expectations" data-status="Completed">
+                                        <td><strong>July 2025</strong></td>
+                                        <td><span class="badge" style="background-color:#fef3c7; color:#92400e;">Monthly</span></td>
+                                        <td><strong>83.00</strong></td>
+                                        <td><span class="badge badge-info">Meets Expectations</span></td>
+                                        <td><span class="badge badge-success">Completed</span></td>
+                                        <td><button class="btn-primary" style="padding: 8px 16px;" onclick="viewBreakdownPage('July 2025', '83.00', 'Monthly')">View Breakdown</button></td>
+                                    </tr>
+                                    <tr data-period="June 2025" data-type="Monthly" data-rating="Meets Expectations" data-status="Completed">
+                                        <td><strong>June 2025</strong></td>
+                                        <td><span class="badge" style="background-color:#fef3c7; color:#92400e;">Monthly</span></td>
+                                        <td><strong>79.00</strong></td>
+                                        <td><span class="badge badge-info">Meets Expectations</span></td>
+                                        <td><span class="badge badge-success">Completed</span></td>
+                                        <td><button class="btn-primary" style="padding: 8px 16px;" onclick="viewBreakdownPage('June 2025', '79.00', 'Monthly')">View Breakdown</button></td>
+                                    </tr>
+                                    <tr data-period="May 2025" data-type="Monthly" data-rating="Meets Expectations" data-status="Completed">
+                                        <td><strong>May 2025</strong></td>
+                                        <td><span class="badge" style="background-color:#fef3c7; color:#92400e;">Monthly</span></td>
+                                        <td><strong>81.50</strong></td>
+                                        <td><span class="badge badge-info">Meets Expectations</span></td>
+                                        <td><span class="badge badge-success">Completed</span></td>
+                                        <td><button class="btn-primary" style="padding: 8px 16px;" onclick="viewBreakdownPage('May 2025', '81.50', 'Monthly')">View Breakdown</button></td>
+                                    </tr>
+                                    <tr data-period="April 2025" data-type="Monthly" data-rating="Meets Expectations" data-status="Completed">
+                                        <td><strong>April 2025</strong></td>
+                                        <td><span class="badge" style="background-color:#fef3c7; color:#92400e;">Monthly</span></td>
+                                        <td><strong>80.00</strong></td>
+                                        <td><span class="badge badge-info">Meets Expectations</span></td>
+                                        <td><span class="badge badge-success">Completed</span></td>
+                                        <td><button class="btn-primary" style="padding: 8px 16px;" onclick="viewBreakdownPage('April 2025', '80.00', 'Monthly')">View Breakdown</button></td>
+                                    </tr>
+                                    <tr data-period="March 2025" data-type="Monthly" data-rating="Needs Minor Improvement" data-status="Completed">
+                                        <td><strong>March 2025</strong></td>
+                                        <td><span class="badge" style="background-color:#fef3c7; color:#92400e;">Monthly</span></td>
+                                        <td><strong>74.00</strong></td>
+                                        <td><span class="badge badge-warning">Needs Minor Improvement</span></td>
+                                        <td><span class="badge badge-success">Completed</span></td>
+                                        <td><button class="btn-primary" style="padding: 8px 16px;" onclick="viewBreakdownPage('March 2025', '74.00', 'Monthly')">View Breakdown</button></td>
+                                    </tr>
+                                    <tr data-period="February 2025" data-type="Monthly" data-rating="Meets Expectations" data-status="Completed">
+                                        <td><strong>February 2025</strong></td>
+                                        <td><span class="badge" style="background-color:#fef3c7; color:#92400e;">Monthly</span></td>
+                                        <td><strong>78.50</strong></td>
+                                        <td><span class="badge badge-info">Meets Expectations</span></td>
+                                        <td><span class="badge badge-success">Completed</span></td>
+                                        <td><button class="btn-primary" style="padding: 8px 16px;" onclick="viewBreakdownPage('February 2025', '78.50', 'Monthly')">View Breakdown</button></td>
+                                    </tr>
+                                    <tr data-period="January 2025" data-type="Monthly" data-rating="Meets Expectations" data-status="Completed">
+                                        <td><strong>January 2025</strong></td>
+                                        <td><span class="badge" style="background-color:#fef3c7; color:#92400e;">Monthly</span></td>
+                                        <td><strong>76.00</strong></td>
+                                        <td><span class="badge badge-info">Meets Expectations</span></td>
+                                        <td><span class="badge badge-success">Completed</span></td>
+                                        <td><button class="btn-primary" style="padding: 8px 16px;" onclick="viewBreakdownPage('January 2025', '76.00', 'Monthly')">View Breakdown</button></td>
+                                    </tr>
+                                    <tr data-period="Q3 2026 (Jul – Sep)" data-type="Quarterly" data-rating="Pending" data-status="Pending">
+                                        <td><strong>Q3 2026</strong> <span style="color: var(--text-muted); font-weight:400;">(Jul – Sep)</span></td>
+                                        <td><span class="badge badge-info">Quarterly</span></td>
+                                        <td style="color: var(--text-muted);">--</td>
+                                        <td style="color: var(--text-muted);">--</td>
+                                        <td><span class="badge badge-warning">Pending</span></td>
+                                        <td style="color: var(--text-muted);">Not yet available</td>
+                                    </tr>
+                                    <tr data-period="Q2 2026 (Apr – Jun)" data-type="Quarterly" data-rating="Exceeds Expectations" data-status="Completed">
+                                        <td><strong>Q2 2026</strong> <span style="color: var(--text-muted); font-weight:400;">(Apr – Jun)</span></td>
+                                        <td><span class="badge badge-info">Quarterly</span></td>
+                                        <td><strong>88.50</strong></td>
+                                        <td><span class="badge badge-success">Exceeds Expectations</span></td>
+                                        <td><span class="badge badge-success">Completed</span></td>
+                                        <td><button class="btn-primary" style="padding: 8px 16px;" onclick="viewBreakdownPage('Q2 2026 (Apr – Jun)', '88.50', 'Quarterly')">View Breakdown</button></td>
+                                    </tr>
+                                    <tr data-period="Q1 2026 (Jan – Mar)" data-type="Quarterly" data-rating="Meets Expectations" data-status="Completed">
+                                        <td><strong>Q1 2026</strong> <span style="color: var(--text-muted); font-weight:400;">(Jan – Mar)</span></td>
+                                        <td><span class="badge badge-info">Quarterly</span></td>
+                                        <td><strong>82.00</strong></td>
+                                        <td><span class="badge badge-info">Meets Expectations</span></td>
+                                        <td><span class="badge badge-success">Completed</span></td>
+                                        <td><button class="btn-primary" style="padding: 8px 16px;" onclick="viewBreakdownPage('Q1 2026 (Jan – Mar)', '82.00', 'Quarterly')">View Breakdown</button></td>
+                                    </tr>
+                                    <tr data-period="Annual 2025" data-type="Annual" data-rating="Meets Expectations" data-status="Completed">
+                                        <td><strong>Annual 2025</strong></td>
+                                        <td><span class="badge" style="background-color:#ede9fe; color:#6d28d9;">Annual</span></td>
+                                        <td><strong>84.75</strong></td>
+                                        <td><span class="badge badge-info">Meets Expectations</span></td>
+                                        <td><span class="badge badge-success">Completed</span></td>
+                                        <td><button class="btn-primary" style="padding: 8px 16px;" onclick="viewBreakdownPage('Annual 2025', '84.75', 'Annual')">View Breakdown</button></td>
+                                    </tr>
+                                </tbody>
+                            </table></div>
+                        </div>
+                    </div>
+
+
+                    <!-- Employee View: Evaluation Breakdown Detail Page
+                         (reached only by clicking "View Breakdown" on a history row —
+                         not a permanent sidebar destination) -->
+                    <div id="employee-history-detail" class="employee-section">
+                        <button class="btn-outline" style="margin-bottom: 16px;" onclick="backToHistory()">
+                            <i class="fa-solid fa-arrow-left"></i> Back to Evaluation History
+                        </button>
+
+                        <div class="table-section">
+                            <div class="table-header">
+                                <div>
+                                    <h2>Evaluation Breakdown</h2>
+                                    <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">
+                                        <span id="breakdown-detail-period">—</span>
+                                    </p>
+                                </div>
+                                <span class="badge badge-info" id="breakdown-detail-type">—</span>
+                            </div>
+                            <p style="font-size: 12px; color: var(--text-muted); padding: 10px 24px 16px;"><i class="fa-solid fa-lock" style="color: var(--primary);"></i> Evaluator identity is kept anonymous — only the evaluation result is shown to you.</p>
+                            <div class="table-scroll"><table>
+                                <thead>
+                                    <tr>
+                                        <th>Criteria</th>
+                                        <th>Weight</th>
+                                        <th>Rating (1-5)</th>
+                                        <th>Score</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="breakdown-detail-body"><!-- JS populated --></tbody>
+                            </table></div>
+                            <div style="padding: 16px 24px; border-top: 1px solid var(--border); display:flex; justify-content:flex-end; align-items:center;">
+                                <strong style="font-size: 15px; color: var(--primary);" id="breakdown-detail-total">Total: — / 100</strong>
+                            </div>
+                        </div>
+
+                        <!-- Rating Scale Definitions — interpretation legend requested by team lead -->
+                        <div class="table-section" style="margin-top: 24px;">
+                            <div class="table-header">
+                                <h2>Rating Scale Definitions</h2>
+                                <span style="font-size: 12px; color: var(--text-muted);">What each 1–5 rating means</span>
+                            </div>
+                            <div style="padding: 4px 24px 8px;">
+                                <div class="rating-legend-row">
+                                    <div class="rating-legend-num" style="background-color:#059669;">5</div>
+                                    <div>
+                                        <strong>Exceeds Expectations <span style="font-weight:400; color: var(--text-muted);">(Highest)</span></strong>
+                                        <p style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">Consistently outperforms target expectations.</p>
+                                    </div>
+                                </div>
+                                <div class="rating-legend-row">
+                                    <div class="rating-legend-num" style="background-color:#0284c7;">4</div>
+                                    <div>
+                                        <strong>Meets Expectations</strong>
+                                        <p style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">Reliably delivers complete, quality work.</p>
+                                    </div>
+                                </div>
+                                <div class="rating-legend-row">
+                                    <div class="rating-legend-num" style="background-color:#d97706;">3</div>
+                                    <div>
+                                        <strong>Needs Minor Improvement</strong>
+                                        <p style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">Inconsistent output or occasional tardiness.</p>
+                                    </div>
+                                </div>
+                                <div class="rating-legend-row">
+                                    <div class="rating-legend-num" style="background-color:#ea580c;">2</div>
+                                    <div>
+                                        <strong>Below Expectations</strong>
+                                        <p style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">Fails key requirements without supervisor guidance.</p>
+                                    </div>
+                                </div>
+                                <div class="rating-legend-row">
+                                    <div class="rating-legend-num" style="background-color:#dc2626;">1</div>
+                                    <div>
+                                        <strong>Unsatisfactory <span style="font-weight:400; color: var(--text-muted);">(Lowest)</span></strong>
+                                        <p style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">Critical performance issues needing immediate action.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Award received for this specific evaluation period -->
+                        <div class="table-section" style="margin-top: 24px;">
+                            <div class="table-header">
+                                <h2>Award Received</h2>
+                            </div>
+                            <div style="padding: 20px 24px;" id="breakdown-detail-award"><!-- JS populated --></div>
+                        </div>
+                    </div>
+
+                    <!-- Employee View 3: Awards Received -->
+                    <div id="employee-awards" class="employee-section">
+                        <div class="table-section">
+                            <div class="table-header">
+                                <h2>Awards & Achievements Received</h2>
+                            </div>
+                            <div class="table-scroll"><table>
+                                <thead>
+                                    <tr>
+                                        <th>Award ID</th>
+                                        <th>Award Title</th>
+                                        <th>Date Received</th>
+                                        <th>Bonus / Perk</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>#AW-012</td>
+                                        <td><strong>Top Performer - Q2</strong></td>
+                                        <td>July 15, 2026</td>
+                                        <td><span class="badge badge-success">+10.00 Bonus Score</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>#AW-005</td>
+                                        <td><strong>Perfect Attendance</strong></td>
+                                        <td>January 10, 2026</td>
+                                        <td><span class="badge badge-info">Gift Certificate</span></td>
+                                    </tr>
+                                </tbody>
+                            </table></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- USER PROFILE MODAL -->
+    <div id="profile-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h2>My Profile Settings</h2>
+                    <p style="font-size:12px; color:var(--text-muted); margin-top:4px;">Manage your account details and security.</p>
+                </div>
+                <button class="close-btn" onclick="document.getElementById('profile-modal').style.display='none'"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="profileUpdateForm" action="update_profile.php" method="POST" enctype="multipart/form-data">
+                    <input type="hidden" id="hidden_username" name="username">
+                    <div style="display:flex; gap:16px; align-items:center; margin-bottom:20px;">
+                        <div class="avatar" style="width:64px; height:64px; font-size:24px;" id="profile-pic-preview">EU</div>
+                        <div>
+                            <label for="profile_pic" style="font-size:13px; font-weight:600; color:var(--primary); cursor:pointer;">Upload New Picture</label>
+                            <input type="file" id="profile_pic" name="profile_pic" accept="image/png, image/jpeg" style="display:none;">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Account Status</label>
+                        <div style="padding:10px; background:var(--background); border-radius:8px; font-size:13px;">
+                            <strong>Department:</strong> <span id="profile-dept">Operations</span><br>
+                            <strong>Designation:</strong> <span id="profile-designation">Employee</span><br>
+                            <strong>Status:</strong> <span class="badge badge-success" id="profile-status">Active</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" name="email" class="form-control" placeholder="user@company.com" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="new_password">New Password (leave blank to keep current)</label>
+                        <input type="password" id="new_password" name="new_password" class="form-control" placeholder="••••••••">
+                    </div>
+
+                    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:24px;">
+                        <button type="button" class="btn-secondary" onclick="document.getElementById('profile-modal').style.display='none'">Cancel</button>
+                        <button type="submit" class="btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Page title map: keeps the header in sync with whatever section is showing ---
+        const PAGE_TITLES = {
+            'employee-dashboard': 'My Employee Dashboard',
+            'employee-history': 'My Evaluation History',
+            'employee-history-detail': 'Evaluation Breakdown',
+            'employee-awards': 'Awards Received'
+        };
+        function setPageTitle(sectionId) {
+            const titleEl = document.getElementById('dashboard-title');
+            if (PAGE_TITLES[sectionId]) titleEl.innerText = PAGE_TITLES[sectionId];
+        }
+
+        // --- Employee Sidebar Navigation ---
+        function switchEmployeeView(sectionId, clickedElement) {
+            document.querySelectorAll('.employee-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+
+            document.querySelectorAll('#nav-employee .nav-item').forEach(el => el.classList.remove('active'));
+            if (clickedElement) {
+                clickedElement.classList.add('active');
+            }
+            setPageTitle(sectionId);
+            closeMobileMenu();
+        }
+
+        // --- 6C. Evaluation Breakdown — dedicated page (not a modal) ---
+        // Award records tied to real dates already shown on the Awards Received page.
+        // Most periods simply have no award, which is the normal case.
+        const AWARD_LOOKUP = {
+            'July 2026': { name: 'Top Performer - Q2', date: 'Awarded July 15, 2026', tag: '+10.00 Bonus Score', cls: 'badge-success' },
+            'Q2 2026 (Apr – Jun)': { name: 'Top Performer - Q2', date: 'Awarded July 15, 2026', tag: '+10.00 Bonus Score', cls: 'badge-success' },
+            'January 2026': { name: 'Perfect Attendance', date: 'Awarded January 10, 2026', tag: 'Gift Certificate', cls: 'badge-info' }
+        };
+
+        // Criteria weights (must match the Evaluation Criteria table)
+        let CRITERIA_WEIGHTS = [];
+
+        // Maps a total score to the official 1–5 rating scale (see Rating Scale Definitions).
+        function ratingTierFor(score) {
+            if (score >= 85) return { num: 1, label: 'Exceeds Expectations', cls: 'badge-success' };
+            if (score >= 75) return { num: 2, label: 'Meets Expectations', cls: 'badge-info' };
+            if (score >= 65) return { num: 3, label: 'Needs Minor Improvement', cls: 'badge-warning' };
+            if (score >= 50) return { num: 4, label: 'Below Expectations', cls: 'badge-orange' };
+            return { num: 5, label: 'Unsatisfactory', cls: 'badge-danger' };
+        }
+
+        async function loadEmployeeData() {
+            const params = new URLSearchParams();
+            const id = sessionStorage.getItem('evalsys_user_id');
+            const username = sessionStorage.getItem('evalsys_username') || '';
+            if (id) params.set('employee_id', id);
+            else params.set('username', username);
+            const response = await fetch(`get_employee_data.php?${params.toString()}`);
+            const result = await response.json();
+            if (result.status !== 'success') throw new Error(result.message || 'Unable to load employee data.');
+
+            const employee = result.employee;
+            sessionStorage.setItem('evalsys_user_id', String(employee.employee_id));
+            document.getElementById('user-name-display').innerText = employee.full_name;
+            document.querySelector('.avatar').innerText = employee.full_name.slice(0, 2).toUpperCase();
+            document.getElementById('profile-dept').innerText = employee.department;
+            document.getElementById('profile-designation').innerText = employee.designation || 'Employee';
+            document.getElementById('profile-status').innerText = employee.status;
+            document.getElementById('email').value = employee.email || '';
+            document.getElementById('hidden_username').value = employee.full_name;
+
+            const criteria = result.criteria || [];
+            const totalImpact = criteria.reduce((sum, c) => sum + Number(c.impact), 0);
+            CRITERIA_WEIGHTS = criteria.map(c => ({ name:c.criteria_name, weight: totalImpact ? Number(c.impact) / totalImpact * 100 : 0 }));
+            document.querySelector('.criteria-cards').innerHTML = criteria.map(c => `
+                <div class="criteria-card"><div class="criteria-top"><h4>${escapeHtml(c.criteria_name)}</h4><span class="badge">${(Number(c.impact) / totalImpact * 100).toFixed(2)}%</span></div><p>${escapeHtml(c.description || '')}</p></div>
+            `).join('');
+
+            const evaluations = result.evaluations || [];
+            const completed = evaluations.filter(e => e.status === 'Completed' && e.score !== null);
+            const latest = completed[0];
+            const stats = document.querySelectorAll('#employee-dashboard .stat-card');
+            if (latest) {
+                stats[0].querySelector('h3').innerHTML = `${Number(latest.score).toFixed(2)} <span style="font-size:14px; font-weight:500; color: var(--text-muted);">/ 100</span>`;
+                stats[0].querySelector('.badge').innerText = `${ratingTierFor(Number(latest.score)).label} · ${latest.evaluation_period}`;
+            }
+            stats[2].querySelector('h3').innerText = completed.length;
+
+            const body = document.getElementById('employee-history-body');
+            body.innerHTML = evaluations.length ? evaluations.map(e => {
+                const score = e.score === null ? null : Number(e.score);
+                const type = (e.eval_type || 'monthly').charAt(0).toUpperCase() + (e.eval_type || 'monthly').slice(1);
+                const tier = score === null ? null : ratingTierFor(score);
+                return `<tr data-period="${escapeHtml(e.evaluation_period)}" data-type="${type}" data-rating="${tier ? tier.label : 'Pending'}" data-status="${escapeHtml(e.status)}"><td><strong>${escapeHtml(e.evaluation_period)}</strong></td><td><span class="badge">${type}</span></td><td>${score === null ? '--' : `<strong>${score.toFixed(2)}</strong>`}</td><td>${tier ? `<span class="badge ${tier.cls}">${tier.label}</span>` : '--'}</td><td><span class="badge ${e.status === 'Completed' ? 'badge-success' : 'badge-warning'}">${escapeHtml(e.status)}</span></td><td>${score === null ? 'Not yet available' : `<button class="btn-primary" style="padding:8px 16px;" onclick="viewBreakdownPage('${escapeJs(e.evaluation_period)}','${score.toFixed(2)}','${type}')">View Breakdown</button>`}</td></tr>`;
+            }).join('') : '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);">No evaluations assigned yet.</td></tr>';
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+        }
+        function escapeJs(value) {
+            return String(value ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        }
+
+        // Computes each criterion's final score from the real total and its weight
+        function computeCriteriaBreakdown(total) {
+            const tier = ratingTierFor(total);
+            const scores = CRITERIA_WEIGHTS.map(c => Math.round(total * (c.weight / 100) * 10) / 10);
+            const roundedSum = scores.reduce((a, b) => a + b, 0);
+            scores[scores.length - 1] = Math.round((scores[scores.length - 1] + (total - roundedSum)) * 10) / 10;
+            return CRITERIA_WEIGHTS.map((c, i) => ({ name: c.name, weight: c.weight, score: scores[i], tier }));
+        }
+
+        function viewBreakdownPage(period, scoreStr, typeLabel) {
+            const total = parseFloat(scoreStr);
+            document.getElementById('breakdown-detail-period').innerText = period;
+            document.getElementById('breakdown-detail-type').innerText = typeLabel;
+            document.getElementById('breakdown-detail-total').innerText = `Total: ${total.toFixed(2)} / 100`;
+
+            const rows = computeCriteriaBreakdown(total);
+            document.getElementById('breakdown-detail-body').innerHTML = rows.map(r => `
+                <tr>
+                    <td>${r.name}</td>
+                    <td><span class="badge">${r.weight}%</span></td>
+                    <td>${r.tier.num} - ${r.tier.label}</td>
+                    <td><strong>${r.score.toFixed(1)}</strong></td>
+                </tr>
+            `).join('');
+
+            const award = AWARD_LOOKUP[period];
+            const awardEl = document.getElementById('breakdown-detail-award');
+            if (award) {
+                awardEl.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                        <div>
+                            <strong>${award.name}</strong>
+                            <p style="font-size:12px; color:var(--text-muted); margin-top:2px;">${award.date}</p>
+                        </div>
+                        <span class="badge ${award.cls}">${award.tag}</span>
+                    </div>`;
+            } else {
+                awardEl.innerHTML = `<p class="assign-placeholder">No award was given for this evaluation period.</p>`;
+            }
+
+            document.querySelectorAll('.employee-section').forEach(el => el.classList.remove('active'));
+            document.getElementById('employee-history-detail').classList.add('active');
+            setPageTitle('employee-history-detail');
+            closeMobileMenu();
+            window.scrollTo(0, 0);
+        }
+
+        function backToHistory() {
+            const historyNav = document.querySelector('#nav-employee .nav-item:nth-child(2)');
+            switchEmployeeView('employee-history', historyNav);
+        }
+
+        // --- 6E. Evaluation History — per-column filters ---
+        function populateHistoryFilters() {
+            const rows = document.querySelectorAll('#employee-history-body tr');
+            const periods = new Set(), types = new Set(), ratings = new Set(), statuses = new Set();
+            rows.forEach(r => {
+                periods.add(r.dataset.period);
+                types.add(r.dataset.type);
+                if (r.dataset.rating !== 'Pending') ratings.add(r.dataset.rating);
+                statuses.add(r.dataset.status);
+            });
+            fillFilterSelect('historyFilterPeriod', periods);
+            fillFilterSelect('historyFilterType', types);
+            fillFilterSelect('historyFilterRating', ratings);
+            fillFilterSelect('historyFilterStatus', statuses);
+        }
+
+        function filterHistoryTable() {
+            const fp = document.getElementById('historyFilterPeriod').value;
+            const ft = document.getElementById('historyFilterType').value;
+            const fr = document.getElementById('historyFilterRating').value;
+            const fs = document.getElementById('historyFilterStatus').value;
+            document.querySelectorAll('#employee-history-body tr').forEach(r => {
+                const match =
+                    (fp === 'all' || r.dataset.period === fp) &&
+                    (ft === 'all' || r.dataset.type === ft) &&
+                    (fr === 'all' || r.dataset.rating === fr) &&
+                    (fs === 'all' || r.dataset.status === fs);
+                r.style.display = match ? '' : 'none';
+            });
+        }
+
+        function clearHistoryFilters() {
+            ['historyFilterPeriod', 'historyFilterType', 'historyFilterRating', 'historyFilterStatus'].forEach(id => {
+                document.getElementById(id).value = 'all';
+            });
+            filterHistoryTable();
+        }
+
+        function fillFilterSelect(id, valuesSet) {
+            const sel = document.getElementById(id);
+            const current = sel.value;
+            const options = [...valuesSet].sort().map(v => `<option value="${v}">${v}</option>`).join('');
+            sel.innerHTML = '<option value="all">All</option>' + options;
+            if (valuesSet.has(current)) sel.value = current;
+        }
+
+        // --- 8. Mobile Sidebar Menu ---
+        function toggleMobileMenu() {
+            document.getElementById('main-dashboard').classList.toggle('sidebar-open');
+        }
+        function closeMobileMenu() {
+            document.getElementById('main-dashboard').classList.remove('sidebar-open');
+        }
+
+        // --- Instant Profile Picture Preview ---
+        document.getElementById('profile_pic').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const previewEl = document.getElementById('profile-pic-preview');
+                    previewEl.innerHTML = `<img src="${event.target.result}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+                    previewEl.style.backgroundColor = 'transparent';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // --- Fetch and Display Profile Data ---
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                await loadEmployeeData();
+                populateHistoryFilters();
+            } catch (err) {
+                console.error('Error loading employee data:', err);
+                alert(err.message);
+            }
+
+            const savedName = sessionStorage.getItem('evalsys_username');
+            if (savedName) {
+                const nameEl = document.getElementById('user-name-display');
+                const avatarEls = document.querySelectorAll('.avatar');
+                const hiddenUsername = document.getElementById('hidden_username');
+                const emailInput = document.getElementById('email');
+                
+                if (nameEl) nameEl.innerText = savedName;
+                if (hiddenUsername) hiddenUsername.value = savedName;
+
+                fetch(`get_profile.php?username=${encodeURIComponent(savedName)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.email && emailInput) {
+                            emailInput.value = data.email;
+                        }
+                        if (data.profile_pic && data.profile_pic !== 'default.png') {
+                            const imgUrl = `uploads/${data.profile_pic}?t=${new Date().getTime()}`;
+                            
+                            avatarEls.forEach(el => {
+                                el.innerHTML = `<img src="${imgUrl}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+                                el.style.backgroundColor = 'transparent';
+                            });
+                        } else {
+                            avatarEls.forEach(el => {
+                                el.innerText = savedName.slice(0, 2).toUpperCase();
+                                el.style.backgroundColor = 'var(--primary)';
+                            });
+                        }
+                    })
+                    .catch(err => console.error("Error fetching profile:", err));
+            }
+        });
+    </script>
+</body>
+</html>

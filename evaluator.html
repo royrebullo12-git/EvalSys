@@ -1,0 +1,1673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EvalSys - Evaluator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* === MODERN CSS VARIABLES === */
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --primary-light: #e0e7ff;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --background: #f8fafc;
+            --surface: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text-main);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* =========================================
+           LOGIN SCREEN STYLES
+           ========================================= */
+        #login-screen {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
+        }
+
+        .login-card {
+            background-color: var(--surface);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .login-brand {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .login-subtitle {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 32px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            background-color: white;
+            transition: border-color 0.2s;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+        
+        select.form-control {
+            cursor: pointer;
+            appearance: auto;
+        }
+
+        .btn-block {
+            width: 100%;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn-block:hover { background-color: var(--primary-hover); }
+
+        /* =========================================
+           DASHBOARD LAYOUT STYLES
+           ========================================= */
+        #main-dashboard {
+            display: none; /* Hidden until login */
+            height: 100vh;
+            width: 100vw;
+        }
+
+        .sidebar {
+            width: 260px;
+            background-color: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 24px 16px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 40px;
+            padding-left: 12px;
+        }
+
+        .nav-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            padding-left: 12px;
+            margin-top: 24px;
+        }
+        .nav-label:first-of-type { margin-top: 0; }
+
+        .nav-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .nav-item:hover {
+            background-color: var(--background);
+            color: var(--text-main);
+        }
+
+        .nav-item.active {
+            background-color: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .top-header {
+            height: 72px;
+            background-color: var(--surface);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+        }
+
+        .header-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .dashboard-container {
+            padding: 32px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Role-specific sections */
+        .role-view, .role-nav { display: none; }
+        .role-view.active, .role-nav.active { display: block; }
+        
+        /* Sub-Sections for functionality */
+        .admin-section, .evaluator-section, .employee-section { display: none; }
+        .admin-section.active, .evaluator-section.active, .employee-section.active { display: block; }
+
+        /* =========================================
+           COMPONENT STYLES (Cards, Tables, etc.)
+           ========================================= */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        }
+
+        .stat-info p {
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .stat-info h3 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background-color: var(--primary-light);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .table-section {
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+            overflow: hidden;
+            margin-bottom: 32px;
+        }
+
+        .table-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-header h2 { font-size: 16px; font-weight: 600; }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        table { width: 100%; border-collapse: collapse; }
+        
+        th {
+            background-color: #f8fafc;
+            text-align: left;
+            padding: 12px 24px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 16px 24px;
+            font-size: 14px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-main);
+        }
+
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background-color: #f8fafc; }
+
+        .badge {
+            background-color: #e2e8f0;
+            color: var(--text-main);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .badge-success { background-color: #d1fae5; color: #065f46; }
+        .badge-warning { background-color: #fef3c7; color: #92400e; }
+        .badge-info { background-color: #e0f2fe; color: #0369a1; }
+
+        .action-icon {
+            color: var(--text-muted);
+            cursor: pointer;
+            margin-right: 12px;
+            transition: color 0.2s;
+        }
+        .action-icon:hover { color: var(--primary); }
+        
+        .score-display {
+            font-size: 48px;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 10px 0;
+        }
+
+        /* =========================================
+           MODAL (POPUP) STYLES
+           ========================================= */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(15, 23, 42, 0.6);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .modal-content {
+            background-color: var(--surface);
+            width: 100%;
+            max-width: 500px;
+            border-radius: var(--radius);
+            padding: 32px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 16px;
+        }
+
+        .modal-header h2 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .close-btn:hover { color: var(--text-main); }
+
+        /* =========================================
+           TABLE SCROLL WRAPPER (prevents tables from
+           breaking the page layout on narrow screens)
+           ========================================= */
+        .table-scroll {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .table-scroll table { min-width: 640px; }
+
+        /* =========================================
+           MOBILE MENU TOGGLE + OVERLAY
+           (hidden on desktop, shown via media query)
+           ========================================= */
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: var(--text-main);
+            cursor: pointer;
+            padding: 8px;
+            margin-right: 12px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background-color: rgba(15, 23, 42, 0.5);
+            z-index: 998;
+        }
+
+        /* =========================================
+           RESPONSIVE LAYOUT (tablet & mobile)
+           ========================================= */
+        @media (max-width: 900px) {
+            #main-dashboard { position: relative; }
+
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                bottom: 0;
+                z-index: 999;
+                transform: translateX(-100%);
+                transition: transform 0.25s ease;
+                box-shadow: 4px 0 16px rgba(0,0,0,0.15);
+            }
+
+            #main-dashboard.sidebar-open .sidebar {
+                transform: translateX(0);
+            }
+
+            #main-dashboard.sidebar-open .sidebar-overlay {
+                display: block;
+            }
+
+            .menu-toggle { display: flex; align-items: center; justify-content: center; }
+
+            .main-content { width: 100%; }
+
+            .top-header { padding: 0 16px; }
+
+            .dashboard-container { padding: 20px 16px; }
+
+            .stats-grid { grid-template-columns: 1fr; gap: 16px; }
+
+            .table-header { flex-wrap: wrap; gap: 12px; }
+
+            .modal-content { max-width: 92vw; padding: 24px; }
+
+            .assign-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 480px) {
+            .user-profile span { display: none; }
+            .header-title { font-size: 17px; }
+            .login-card { padding: 28px 20px; }
+        }
+
+        /* =========================================
+           ACCORDION (self-contained, Bootstrap-style
+           interaction — expand/collapse on click)
+           ========================================= */
+        .accordion {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            background-color: var(--surface);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        }
+
+        .accordion-button {
+            width: 100%;
+            text-align: left;
+            background: var(--surface);
+            border: none;
+            padding: 20px 24px;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-main);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .accordion-button:hover { background-color: var(--background); }
+
+        .accordion-button .accordion-icon {
+            color: var(--text-muted);
+            transition: transform 0.25s ease;
+        }
+
+        .accordion-button.active .accordion-icon {
+            transform: rotate(180deg);
+            color: var(--primary);
+        }
+
+        .accordion-collapse {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .accordion-collapse.show { max-height: 500px; }
+
+        .accordion-body {
+            padding: 0 24px 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        /* =========================================
+           FILTER PILL BUTTONS (Evaluation History)
+           ========================================= */
+        .filter-btn {
+            padding: 6px 16px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background-color: var(--surface);
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .filter-btn:hover { background-color: var(--background); color: var(--text-main); }
+
+        .filter-btn.active {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            color: #ffffff;
+        }
+
+        /* =========================================
+           ASSIGN EVALUATIONS PANEL
+           (Assign by Employee / Assign by Evaluator)
+           ========================================= */
+        .assign-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            padding: 24px;
+        }
+
+        .assign-column {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background-color: var(--surface);
+        }
+
+        .assign-column-header {
+            background-color: var(--background);
+            padding: 14px 18px;
+            font-size: 14px;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-main);
+        }
+
+        /* Scrollable "rectangle" list of employees / evaluators */
+        .assign-list-scroll {
+            max-height: 220px;
+            overflow-y: auto;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .assign-item {
+            padding: 12px 18px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            transition: background-color 0.15s;
+        }
+        .assign-item:last-child { border-bottom: none; }
+        .assign-item:hover { background-color: var(--background); }
+        .assign-item.active { background-color: var(--primary-light); color: var(--primary); }
+
+        .assign-detail {
+            padding: 16px 18px;
+        }
+
+        .assign-detail-title {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+
+        .select-all-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+
+        .checkbox-list-scroll {
+            max-height: 160px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            padding: 6px 4px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .checkbox-row:hover { background-color: var(--background); }
+
+        .assign-placeholder {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-style: italic;
+            padding: 8px 0;
+        }
+
+        /* Per-column filters for the Assigned Tasks table */
+        .filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            background-color: var(--background);
+            align-items: flex-end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 160px;
+        }
+
+        .filter-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .filter-select {
+            padding: 8px 12px;
+            font-size: 13px;
+        }
+
+        /* Fixed-size scrollable assigned tasks table */
+        .fixed-scroll-table {
+            max-height: 320px;
+            overflow-y: auto;
+        }
+
+        .fixed-scroll-table thead th {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        /* Requested admin-management additions */
+        .disabled-action {
+            color: #cbd5e1;
+            cursor: not-allowed;
+            margin-right: 12px;
+        }
+
+        .archive-action {
+            color: var(--text-muted);
+            cursor: pointer;
+            margin-right: 12px;
+            transition: color 0.2s;
+        }
+
+        .archive-action:hover { color: var(--warning); }
+
+        .archive-icon {
+            position: relative;
+            display: inline-flex;
+            width: 20px;
+            height: 20px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .archive-icon .archive-arrow {
+            position: absolute;
+            top: -4px;
+            left: 7px;
+            font-size: 9px;
+        }
+
+        .archive-img {
+            width: 22px;
+            height: 22px;
+            object-fit: contain;
+            vertical-align: middle;
+        }
+
+
+        .archive-action.unarchive { color: var(--success); }
+        .archive-action.unarchive:hover { color: #059669; }
+
+        .danger-modal-text {
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text-muted);
+            margin-bottom: 18px;
+        }
+
+        .warning-box {
+            background: #fff7ed;
+            border: 1px solid #fed7aa;
+            color: #9a3412;
+            border-radius: 8px;
+            padding: 12px 14px;
+            font-size: 13px;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .btn-secondary {
+            background: var(--surface);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-secondary:hover { background: var(--background); }
+
+        .assign-dept-filter {
+            padding: 12px 18px;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface);
+        }
+
+        .assign-dept-filter label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+        /* =========================================
+           EVALUATOR EXPERIENCE — REBUILT
+           Scoped to evaluator dashboard/components
+           ========================================= */
+        .evaluator-home-grid {
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+            gap:18px;
+            margin-bottom:24px;
+        }
+        .evaluator-stat-card {
+            background:var(--surface);
+            border:1px solid var(--border);
+            border-radius:var(--radius);
+            padding:20px;
+            min-height:132px;
+            
+            box-shadow:0 1px 2px rgba(0,0,0,0.02);
+            display:flex;
+            align-items:flex-start;
+            justify-content:space-between;
+            gap:14px;
+        }
+        .evaluator-stat-card .kicker { color:var(--text-muted); font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.4px; margin-bottom:7px; }
+        .evaluator-stat-card h3 { font-size:26px; line-height:1.15; margin-bottom:5px; }
+        .evaluator-stat-card .support { color:var(--text-muted); font-size:12px; line-height:1.45; }
+        .evaluator-stat-icon {
+            width:42px; height:42px; border-radius:11px; background:var(--primary-light); color:var(--primary);
+            display:flex; align-items:center; justify-content:center; flex:0 0 auto;
+        }
+        .evaluator-banner {
+            display:flex; align-items:center; justify-content:space-between; gap:16px;
+            padding:18px 20px; border:1px solid var(--border); border-radius:var(--radius);
+            background:linear-gradient(135deg,#ffffff 0%,#f8fafc 100%); margin-bottom:24px;
+        }
+        .evaluator-banner-title { font-size:18px; font-weight:700; margin-bottom:4px; }
+        .evaluator-banner-sub { font-size:13px; color:var(--text-muted); }
+        .evaluator-chip-row { display:flex; flex-wrap:wrap; gap:8px; }
+        .criteria-highlight { margin-bottom:24px; }
+        .criteria-cards { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; padding:20px 24px 24px; }
+        .criteria-card { border:1px solid var(--border); border-radius:10px; padding:16px; background:var(--background); }
+        .criteria-card .criteria-top { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:9px; }
+        .criteria-card h4 { font-size:14px; }
+        .criteria-card p { color:var(--text-muted); font-size:12px; line-height:1.5; }
+        .criteria-version { font-size:11px; color:var(--text-muted); padding:0 24px 16px; }
+        .evaluator-section-intro { margin-bottom:18px; color:var(--text-muted); font-size:13px; line-height:1.55; }
+        .history-toolbar { display:flex; flex-wrap:wrap; gap:10px; align-items:center; padding:16px 24px; border-bottom:1px solid var(--border); background:var(--background); }
+        .history-filter-wrap { display:flex; gap:8px; flex-wrap:wrap; }
+        .history-select-wrap { display:flex; gap:8px; flex-wrap:wrap; margin-left:auto; }
+        .history-select-wrap .form-control { min-width:150px; width:auto; }
+        .evaluator-empty { padding:34px 24px; text-align:center; color:var(--text-muted); }
+        .deadline-badge { display:inline-flex; align-items:center; gap:6px; padding:5px 9px; border-radius:999px; background:#fff7ed; color:#9a3412; font-size:11px; font-weight:700; }
+        .countdown-value { font-variant-numeric:tabular-nums; }
+        .modal-content.evaluator-modal { max-width:1080px; width:calc(100vw - 56px); max-height:90vh; overflow:auto; padding:0; }
+        .evaluator-modal .modal-header { padding:22px 28px 16px; margin-bottom:0; position:sticky; top:0; background:var(--surface); z-index:2; }
+        .eval-modal-body { padding:24px 28px 28px; }
+        .eval-subject-card { display:flex; align-items:center; justify-content:space-between; gap:18px; padding:18px; border:1px solid var(--border); border-radius:12px; background:var(--background); margin-bottom:20px; }
+        .eval-subject-main { display:flex; align-items:center; gap:12px; }
+        .eval-subject-avatar { width:50px; height:50px; border-radius:14px; background:var(--primary-light); color:var(--primary); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:17px; }
+        .eval-subject-main h3 { font-size:18px; margin-bottom:4px; }
+        .eval-subject-main p { font-size:12px; color:var(--text-muted); }
+        .criteria-eval-grid { display:grid; grid-template-columns:1fr; gap:16px; }
+        .criteria-eval-card { border:1px solid var(--border); border-radius:12px; padding:18px; }
+        .criteria-eval-header { display:flex; justify-content:space-between; gap:16px; align-items:flex-start; margin-bottom:10px; }
+        .criteria-eval-header h4 { font-size:15px; margin-bottom:4px; }
+        .criteria-eval-header p { font-size:12px; color:var(--text-muted); line-height:1.5; max-width:760px; }
+        .rating-options { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:8px; margin-top:14px; }
+        .rating-option { position:relative; }
+        .rating-option input { position:absolute; opacity:0; pointer-events:none; }
+        .rating-option label { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:68px; padding:9px 7px; border:1px solid var(--border); border-radius:9px; background:var(--surface); cursor:pointer; text-align:center; transition:all .15s ease; }
+        .rating-option label strong { font-size:16px; color:var(--text-main); }
+        .rating-option label span { font-size:10px; color:var(--text-muted); margin-top:4px; line-height:1.2; }
+        .rating-option input:checked + label { border-color:var(--primary); background:var(--primary-light); box-shadow:0 0 0 2px rgba(79,70,229,.10); }
+        .rating-option input:focus-visible + label { outline:2px solid var(--primary); outline-offset:2px; }
+        .score-preview { display:grid; grid-template-columns:1fr 260px; gap:16px; margin-top:20px; }
+        .score-breakdown { border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+        .score-breakdown table th, .score-breakdown table td { padding:11px 14px; }
+        .total-score-card { border:1px solid var(--primary-light); border-radius:12px; background:linear-gradient(135deg,#eef2ff 0%,#ffffff 100%); padding:20px; display:flex; flex-direction:column; justify-content:center; }
+        .total-score-card p { color:var(--text-muted); font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.4px; }
+        .total-score-card strong { font-size:38px; line-height:1; color:var(--primary); margin:9px 0 6px; }
+        .total-score-card span { font-size:12px; color:var(--text-muted); }
+        .eval-modal-footer { display:flex; justify-content:flex-end; gap:10px; padding-top:20px; margin-top:20px; border-top:1px solid var(--border); }
+        .score-legend { margin-top:10px; font-size:11px; color:var(--text-muted); }
+        .history-score { font-weight:700; color:var(--primary); }
+
+        @media (max-width: 1100px) {
+            .evaluator-home-grid { grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); }
+            .criteria-cards { grid-template-columns:1fr; }
+            .score-preview { grid-template-columns:1fr; }
+        }
+        @media (max-width: 720px) {
+            .evaluator-home-grid { grid-template-columns:1fr; }
+            .evaluator-banner { align-items:flex-start; flex-direction:column; }
+            .employee-select-item { grid-template-columns:auto 1fr; }
+            .employee-select-item > .badge, .employee-select-item > button { grid-column:2; justify-self:start; }
+            .history-select-wrap { margin-left:0; width:100%; }
+            .history-select-wrap .form-control { flex:1; min-width:0; }
+            .modal-content.evaluator-modal { width:calc(100vw - 20px); max-height:94vh; }
+            .eval-modal-body { padding:18px; }
+            .evaluator-modal .modal-header { padding:18px; }
+            .rating-options { grid-template-columns:1fr 1fr; }
+            .eval-subject-card { flex-direction:column; align-items:flex-start; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ==============================================
+         MAIN DASHBOARD LAYOUT (Evaluator)
+         ============================================== -->
+    <div id="main-dashboard" style="display:flex;">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="brand">
+                <i class="fa-solid fa-chart-pie"></i> EvalSys
+            </div>
+
+            <div id="nav-evaluator" class="role-nav active">
+                    <div class="nav-label">Evaluator Workspace</div>
+                    <ul class="nav-list">
+                        <li class="nav-item active" onclick="switchEvaluatorView('evaluator-dashboard', this)">
+                            <i class="fa-solid fa-house"></i> Dashboard
+                        </li>
+                        <li class="nav-item" onclick="switchEvaluatorView('evaluator-pending', this)">
+                            <i class="fa-solid fa-file-signature"></i> Pending Tasks
+                        </li>
+                        <li class="nav-item" onclick="switchEvaluatorView('evaluator-history', this)">
+                            <i class="fa-solid fa-clock-rotate-left"></i> History
+                        </li>
+                    </ul>
+            </div>
+
+            <ul class="nav-list" style="margin-top: auto;">
+                <li class="nav-item" onclick="window.location.href='login.html'" style="color: #ef4444;">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out
+                </li>
+            </ul>
+        </aside>
+
+        <div class="sidebar-overlay" onclick="closeMobileMenu()"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-left">
+                    <button class="menu-toggle" onclick="toggleMobileMenu()" aria-label="Toggle menu"><i class="fa-solid fa-bars"></i></button>
+                    <div class="header-title" id="dashboard-title">Evaluator Dashboard</div>
+                </div>
+                <div class="user-profile">
+                    <span id="user-name-display">Jane Smith</span>
+                    <div class="avatar">JS</div>
+                </div>
+            </header>
+
+            <div class="dashboard-container">
+                <div id="view-evaluator" class="role-view active">
+
+                    <!-- Evaluator Dashboard -->
+                    <div id="evaluator-dashboard" class="evaluator-section active">
+                        <div class="evaluator-banner">
+                            <div>
+                                <div class="evaluator-banner-title">Good day, Jane Smith</div>
+                                <div class="evaluator-banner-sub">You are the evaluator for the <strong>Operations</strong> department. You can only evaluate employees assigned to your department.</div>
+                            </div>
+                            <div class="evaluator-chip-row">
+                                <span class="badge badge-info"><i class="fa-solid fa-building"></i>&nbsp; Operations</span>
+                                <span class="deadline-badge"><i class="fa-solid fa-calendar-day"></i> Deadline: September 15, 2026</span>
+                            </div>
+                        </div>
+
+                        <div class="evaluator-home-grid">
+                            <div class="evaluator-stat-card">
+                                <div><div class="kicker">Department</div><h3 style="font-size:20px;">Operations</h3><div class="support">Evaluator scope</div></div>
+                                <div class="evaluator-stat-icon"><i class="fa-solid fa-building"></i></div>
+                            </div>
+                            <div class="evaluator-stat-card">
+                                <div><div class="kicker">Total Tasks</div><h3 id="eval-total-tasks">4</h3><div class="support">Employees assigned to you</div></div>
+                                <div class="evaluator-stat-icon"><i class="fa-solid fa-list-check"></i></div>
+                            </div>
+                            <div class="evaluator-stat-card">
+                                <div><div class="kicker">Most Recent Deadline</div><h3 style="font-size:20px;">Sep 15, 2026</h3><div class="support">Current evaluation cycle</div></div>
+                                <div class="evaluator-stat-icon"><i class="fa-solid fa-calendar-check"></i></div>
+                            </div>
+                            <div class="evaluator-stat-card">
+                                <div><div class="kicker">Time Remaining</div><h3 class="countdown-value" id="evaluator-countdown">--</h3><div class="support">Until the deadline</div></div>
+                                <div class="evaluator-stat-icon"><i class="fa-solid fa-hourglass-half"></i></div>
+                            </div>
+                            <div class="evaluator-stat-card">
+                                <div><div class="kicker">Completed This Year</div><h3 id="eval-completed-year">6</h3><div class="support">Evaluations completed in 2026</div></div>
+                                <div class="evaluator-stat-icon"><i class="fa-solid fa-clipboard-check"></i></div>
+                            </div>
+                        </div>
+
+                        <div class="table-section criteria-highlight">
+                            <div class="table-header">
+                                <div>
+                                    <h2>Current Evaluation Criteria</h2>
+                                    <p style="font-size:12px; color:var(--text-muted); margin-top:4px;">Review the active criteria, impact levels, and percentage distribution before evaluating anyone.</p>
+                                </div>
+                                <span class="badge badge-info">Current Version · 2026</span>
+                            </div>
+                            <div class="criteria-cards">
+                                <div class="criteria-card">
+                                    <div class="criteria-top"><h4>Quality of Work</h4><span class="badge">50%</span></div>
+                                    <p>Measures the accuracy, completeness, consistency, and standard of the employee's work output.</p>
+                                </div>
+                                <div class="criteria-card">
+                                    <div class="criteria-top"><h4>Designation Competence</h4><span class="badge">30%</span></div>
+                                    <p>Measures how effectively the employee performs the responsibilities and skills required by their designation.</p>
+                                </div>
+                                <div class="criteria-card">
+                                    <div class="criteria-top"><h4>Attendance</h4><span class="badge">20%</span></div>
+                                    <p>Measures attendance, punctuality, and consistency in reporting for scheduled work.</p>
+                                </div>
+                            </div>
+                            <div class="criteria-version"><i class="fa-solid fa-bell" style="color:var(--primary);"></i> Criteria changes and score-computation updates are shown here so evaluators are informed before grading.</div>
+                        </div>
+                    </div>
+
+                    <!-- Pending Tasks: only not-yet-evaluated employees -->
+                    <div id="evaluator-pending" class="evaluator-section">
+                        <div class="table-section">
+                            <div class="table-header">
+                                <div>
+                                    <h2>Pending Evaluations</h2>
+                                    <p style="font-size:12px; color:var(--text-muted); margin-top:4px;">Only evaluations that are still incomplete are displayed. Select <strong>Evaluate Now</strong> to begin grading.</p>
+                                </div>
+                                <span class="badge badge-warning" id="pending-count-badge">2 Pending</span>
+                            </div>
+                            <div class="table-scroll"><table>
+                                <thead>
+                                    <tr>
+                                        <th>Eval ID</th>
+                                        <th>Employee</th>
+                                        <th>Department</th>
+                                        <th>Evaluation Period</th>
+                                        <th>Deadline</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="evaluator-pending-body"></tbody>
+                            </table></div>
+                            <div id="evaluator-pending-empty" class="evaluator-empty" style="display:none;">All assigned employees have been evaluated for the current cycle.</div>
+                        </div>
+                    </div>
+
+                    <!-- History -->
+                    <div id="evaluator-history" class="evaluator-section">
+                        <div class="table-section">
+                            <div class="table-header">
+                                <div>
+                                    <h2>Evaluation History</h2>
+                                    <p style="font-size:12px; color:var(--text-muted); margin-top:4px;">Every employee you have graded is listed here.</p>
+                                </div>
+                                <span class="badge badge-success" id="history-result-count">6 Records</span>
+                            </div>
+                            <div class="history-toolbar">
+                                <div class="history-filter-wrap">
+                                    <button class="filter-btn active" data-history-type="monthly" onclick="setEvaluatorHistoryType('monthly', this)">Monthly</button>
+                                    <button class="filter-btn" data-history-type="quarterly" onclick="setEvaluatorHistoryType('quarterly', this)">Quarterly</button>
+                                    <button class="filter-btn" data-history-type="annual" onclick="setEvaluatorHistoryType('annual', this)">Annual</button>
+                                </div>
+                                <div class="history-select-wrap">
+                                    <select id="evaluator-history-period" class="form-control filter-select" onchange="renderEvaluatorHistory()" aria-label="History period"></select>
+                                    <select id="evaluator-history-year" class="form-control filter-select" onchange="renderEvaluatorHistory()" aria-label="History year">
+                                        <option value="2026">2026</option>
+                                        <option value="2025">2025</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="table-scroll">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Employee</th>
+                                            <th>Evaluation Period</th>
+                                            <th>Type</th>
+                                            <th>Total Score</th>
+                                            <th>Completed On</th>
+                                            <th>Status</th>
+                                            <th>Details</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="evaluator-history-body"></tbody>
+                                </table>
+                            </div>
+                            <div id="evaluator-history-empty" class="evaluator-empty" style="display:none;">No evaluation records match the selected period.</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- ==============================================
+         3B. EVALUATION HISTORY — VIEW DETAILS MODAL
+         ============================================== -->
+    <div id="history-detail-modal" class="modal-overlay">
+        <div class="modal-content evaluator-modal" style="max-width:640px;">
+            <div class="modal-header">
+                <div>
+                    <h2>Evaluation Details</h2>
+                    <p style="font-size:12px;color:var(--text-muted);margin-top:4px;">Full breakdown of a completed evaluation.</p>
+                </div>
+                <button class="close-btn" onclick="closeHistoryDetailModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="eval-modal-body">
+                <div class="eval-subject-card">
+                    <div class="eval-subject-main">
+                        <div class="eval-subject-avatar" id="history-detail-avatar">--</div>
+                        <div>
+                            <h3 id="history-detail-name">Employee Name</h3>
+                            <p><span id="history-detail-type-label">Monthly</span> · Period: <strong id="history-detail-period">--</strong></p>
+                        </div>
+                    </div>
+                    <div class="evaluator-chip-row">
+                        <span class="badge badge-success">Completed</span>
+                        <span class="badge" id="history-detail-completed">Completed on --</span>
+                    </div>
+                </div>
+
+                <div class="score-preview">
+                    <div class="score-breakdown">
+                        <table>
+                            <thead><tr><th>Criteria</th><th>Distribution</th><th>Rating</th><th>Weighted Score</th></tr></thead>
+                            <tbody id="history-detail-breakdown-body"></tbody>
+                        </table>
+                        <div class="score-legend"><i class="fa-solid fa-circle-info"></i> Weighted score = (rating ÷ 5) × criterion weight. Ratings shown are estimated from the final score.</div>
+                    </div>
+                    <div class="total-score-card">
+                        <p>Total Score</p>
+                        <strong id="history-detail-total">0.00</strong>
+                        <p style="font-size:12px;color:var(--text-muted);margin-top:4px;">out of 100</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==============================================
+         3A. EVALUATION POPUP MODAL (For Managers)
+         ============================================== -->
+    <div id="eval-modal" class="modal-overlay">
+        <div class="modal-content evaluator-modal">
+            <div class="modal-header">
+                <div>
+                    <h2>Evaluate <span id="eval-modal-employee-name">Employee</span></h2>
+                    <p style="font-size:12px;color:var(--text-muted);margin-top:4px;">Current criteria and score computation are shown before submission.</p>
+                </div>
+                <button class="close-btn" onclick="closeEvaluationModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="eval-modal-body">
+                <div class="eval-subject-card">
+                    <div class="eval-subject-main">
+                        <div class="eval-subject-avatar" id="eval-modal-avatar">ET</div>
+                        <div>
+                            <h3 id="eval-subject-fullname">Employee Name</h3>
+                            <p><span id="eval-subject-dept">Operations</span> · <span id="eval-subject-designation">Employee</span> · Evaluation Period: <strong id="eval-subject-period">August 2026</strong></p>
+                        </div>
+                    </div>
+                    <div class="evaluator-chip-row">
+                        <span class="badge badge-info">Evaluator: Jane Smith</span>
+                        <span class="badge">3 Criteria · 100%</span>
+                    </div>
+                </div>
+
+                <form id="evaluationForm" onsubmit="return false;">
+                    <div class="criteria-eval-grid">
+                        <div class="criteria-eval-card">
+                            <div class="criteria-eval-header">
+                                <div>
+                                    <h4>Quality of Work</h4>
+                                    <p>Accuracy, completeness, consistency, and overall standard of work output.</p>
+                                </div>
+                                <span class="badge">50%</span>
+                            </div>
+                            <div class="rating-options">
+                                <div class="rating-option"><input type="radio" id="qow-5" name="qow" value="5"><label for="qow-5"><strong>1</strong><span>Exceptional</span></label></div>
+                                <div class="rating-option"><input type="radio" id="qow-4" name="qow" value="4"><label for="qow-4"><strong>2</strong><span>Exceeds</span></label></div>
+                                <div class="rating-option"><input type="radio" id="qow-3" name="qow" value="3"><label for="qow-3"><strong>3</strong><span>Meets</span></label></div>
+                                <div class="rating-option"><input type="radio" id="qow-2" name="qow" value="2"><label for="qow-2"><strong>4</strong><span>Needs Improvement</span></label></div>
+                                <div class="rating-option"><input type="radio" id="qow-1" name="qow" value="1"><label for="qow-1"><strong>5</strong><span>Unsatisfactory</span></label></div>
+                            </div>
+                        </div>
+
+                        <div class="criteria-eval-card">
+                            <div class="criteria-eval-header">
+                                <div>
+                                    <h4>Designation Competence</h4>
+                                    <p>Effectiveness in performing responsibilities and skills required by the employee's designation.</p>
+                                </div>
+                                <span class="badge">30%</span>
+                            </div>
+                            <div class="rating-options">
+                                <div class="rating-option"><input type="radio" id="dc-5" name="dc" value="5"><label for="dc-5"><strong>1</strong><span>Exceptional</span></label></div>
+                                <div class="rating-option"><input type="radio" id="dc-4" name="dc" value="4"><label for="dc-4"><strong>2</strong><span>Exceeds</span></label></div>
+                                <div class="rating-option"><input type="radio" id="dc-3" name="dc" value="3"><label for="dc-3"><strong>3</strong><span>Meets</span></label></div>
+                                <div class="rating-option"><input type="radio" id="dc-2" name="dc" value="2"><label for="dc-2"><strong>4</strong><span>Needs Improvement</span></label></div>
+                                <div class="rating-option"><input type="radio" id="dc-1" name="dc" value="1"><label for="dc-1"><strong>5</strong><span>Unsatisfactory</span></label></div>
+                            </div>
+                        </div>
+
+                        <div class="criteria-eval-card">
+                            <div class="criteria-eval-header">
+                                <div>
+                                    <h4>Attendance</h4>
+                                    <p>Attendance, punctuality, and consistency in reporting for scheduled work.</p>
+                                </div>
+                                <span class="badge">20%</span>
+                            </div>
+                            <div class="rating-options">
+                                <div class="rating-option"><input type="radio" id="att-5" name="att" value="5"><label for="att-5"><strong>1</strong><span>Exceptional</span></label></div>
+                                <div class="rating-option"><input type="radio" id="att-4" name="att" value="4"><label for="att-4"><strong>2</strong><span>Exceeds</span></label></div>
+                                <div class="rating-option"><input type="radio" id="att-3" name="att" value="3"><label for="att-3"><strong>3</strong><span>Meets</span></label></div>
+                                <div class="rating-option"><input type="radio" id="att-2" name="att" value="2"><label for="att-2"><strong>4</strong><span>Needs Improvement</span></label></div>
+                                <div class="rating-option"><input type="radio" id="att-1" name="att" value="1"><label for="att-1"><strong>5</strong><span>Unsatisfactory</span></label></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="score-preview">
+                        <div class="score-breakdown">
+                            <table>
+                                <thead><tr><th>Criteria</th><th>Distribution</th><th>Rating</th><th>Weighted Score</th></tr></thead>
+                                <tbody id="eval-score-breakdown-body">
+                                    <tr><td>Quality of Work</td><td>50%</td><td>—</td><td>—</td></tr>
+                                    <tr><td>Designation Competence</td><td>30%</td><td>—</td><td>—</td></tr>
+                                    <tr><td>Attendance</td><td>20%</td><td>—</td><td>—</td></tr>
+                                </tbody>
+                            </table>
+                            <div class="score-legend"><i class="fa-solid fa-circle-info"></i> Weighted score = (rating ÷ 5) × criterion weight. Maximum total is 100.</div>
+                        </div>
+                        <div class="total-score-card">
+                            <p>Total Score</p>
+                            <strong id="eval-total-score">0.00</strong>
+                            <span id="eval-rating-summary">Complete all three ratings to calculate the final score.</span>
+                        </div>
+                    </div>
+
+                    <div class="eval-modal-footer">
+                        <button type="button" class="btn-secondary" onclick="closeEvaluationModal()">Cancel</button>
+                        <button type="button" class="btn-primary" onclick="submitEvaluation()"><i class="fa-solid fa-check"></i> Review & Submit Evaluation</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // --- Shared page-load helper: show the signed-in username if available ---
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedName = sessionStorage.getItem('evalsys_username');
+            if (savedName) {
+                const nameEl = document.getElementById('user-name-display');
+                const avatarEl = document.querySelector('.avatar');
+                if (nameEl) nameEl.innerText = savedName;
+                if (avatarEl) avatarEl.innerText = savedName.slice(0, 2).toUpperCase();
+            }
+        });
+
+        // --- 3. Evaluator Sidebar Navigation ---
+        function switchEvaluatorView(sectionId, clickedElement) {
+            document.querySelectorAll('.evaluator-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            
+            document.querySelectorAll('#nav-evaluator .nav-item').forEach(el => el.classList.remove('active'));
+            if(clickedElement) {
+                clickedElement.classList.add('active');
+            }
+            closeMobileMenu();
+        }
+
+
+        // --- 5. Evaluator workspace + scoring ---
+        let evaluatorId = Number(sessionStorage.getItem('evalsys_user_id') || 0);
+        let evaluatorDepartment = '';
+        let evaluatorCriteria = [];
+        let evaluatorEmployees = [];
+        let evaluatorHistory = [];
+
+        let activeEvaluatorHistoryType = 'monthly';
+        let activeEvaluationEmployee = null;
+        let countdownTimer = null;
+
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+        }
+
+        function criteriaKey(criteriaId) { return `criteria_${criteriaId}`; }
+
+        function renderCriteriaUi() {
+            const cards = document.querySelector('.criteria-cards');
+            const evalGrid = document.querySelector('.criteria-eval-grid');
+            const chip = document.querySelector('.eval-subject-card .evaluator-chip-row .badge:not(.badge-info)');
+            if (cards) cards.innerHTML = evaluatorCriteria.map(c => `
+                <div class="criteria-card"><div class="criteria-top"><h4>${escapeHtml(c.name)}</h4><span class="badge">${(c.weight * 100).toFixed(2)}%</span></div><p>${escapeHtml(c.description || '')}</p></div>
+            `).join('');
+            if (evalGrid) evalGrid.innerHTML = evaluatorCriteria.map(c => `
+                <div class="criteria-eval-card"><div class="criteria-eval-header"><div><h4>${escapeHtml(c.name)}</h4><p>${escapeHtml(c.description || '')}</p></div><span class="badge">${(c.weight * 100).toFixed(2)}%</span></div>
+                    <div class="rating-options">${[5,4,3,2,1].map(r => `<div class="rating-option"><input type="radio" id="${criteriaKey(c.id)}-${r}" name="${criteriaKey(c.id)}" value="${r}"><label for="${criteriaKey(c.id)}-${r}"><strong>${r}</strong><span>${ratingLabel(r)}</span></label></div>`).join('')}</div>
+                </div>
+            `).join('');
+            if (chip) chip.innerText = `${evaluatorCriteria.length} Criteria · 100%`;
+        }
+
+        async function loadEvaluatorData() {
+            const username = sessionStorage.getItem('evalsys_username') || '';
+            const params = new URLSearchParams();
+            if (evaluatorId) params.set('evaluator_id', evaluatorId);
+            else params.set('username', username);
+            const response = await fetch(`get_evaluator_data.php?${params.toString()}`);
+            const result = await response.json();
+            if (result.status !== 'success') throw new Error(result.message || 'Unable to load evaluator data.');
+            evaluatorId = Number(result.evaluator.employee_id);
+            evaluatorDepartment = result.evaluator.department;
+            sessionStorage.setItem('evalsys_user_id', String(evaluatorId));
+            document.getElementById('user-name-display').innerText = result.evaluator.full_name;
+            document.querySelector('.evaluator-banner-title').innerText = `Good day, ${result.evaluator.full_name}`;
+            document.querySelector('.evaluator-banner-sub strong').innerText = evaluatorDepartment;
+            document.querySelector('.evaluator-chip-row .badge-info').innerHTML = `<i class="fa-solid fa-building"></i>&nbsp; ${escapeHtml(evaluatorDepartment)}`;
+            evaluatorCriteria = (result.criteria || []).map(c => ({ id:Number(c.criteria_id), key:criteriaKey(c.criteria_id), name:c.criteria_name, impact:Number(c.impact), weight:Number(c.weight), description:c.description || '' }));
+            evaluatorEmployees = (result.tasks || []).map(task => ({ id:Number(task.employee_id), evaluationId:Number(task.evaluation_id), name:task.employee_name, designation:task.designation || 'Employee', dept:task.department, period:task.evaluation_period, taskId:`#${task.evaluation_id}`, status:String(task.status).toLowerCase(), score:task.score == null ? null : Number(task.score), completed:task.completed_at }));
+            evaluatorHistory = evaluatorEmployees.filter(e => e.status === 'completed').map(e => ({ name:e.name, type:'monthly', period:e.period, year:e.period.slice(-4), score:e.score, completed:e.completed ? new Date(e.completed).toLocaleDateString('en-US', {month:'long',day:'numeric',year:'numeric'}) : '—', evaluationId:e.evaluationId }));
+            document.getElementById('eval-total-tasks').innerText = evaluatorEmployees.length;
+            document.getElementById('eval-completed-year').innerText = evaluatorHistory.filter(e => e.year === String(new Date().getFullYear())).length;
+            const latestTask = evaluatorEmployees[0];
+            if (latestTask) {
+                const deadline = finalWeekDeadline(latestTask.period);
+                document.querySelector('.evaluator-home-grid .evaluator-stat-card:nth-child(3) h3').innerText = deadline ? deadline.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) : latestTask.period;
+            }
+            document.querySelector('.eval-subject-card .badge-info').innerText = `Evaluator: ${result.evaluator.full_name}`;
+            renderCriteriaUi();
+            applyEvaluatorCriteriaToUi();
+        }
+
+        function initials(name) {
+            return name.split(' ').map(part => part[0]).slice(0,2).join('').toUpperCase();
+        }
+
+        function parseEvaluationPeriod(period) {
+            const match = String(period).match(/^([A-Za-z]+)\s+(\d{4})$/);
+            if (!match) return null;
+            const monthIndex = {
+                january:0, february:1, march:2, april:3, may:4, june:5,
+                july:6, august:7, september:8, october:9, november:10, december:11
+            }[match[1].toLowerCase()];
+            const year = Number(match[2]);
+            if (monthIndex === undefined || !year) return null;
+            return { monthIndex, year };
+        }
+
+        function isFinalWeekOfPeriod(period, now = new Date()) {
+            const parsed = parseEvaluationPeriod(period);
+            if (!parsed) return false;
+            if (now.getFullYear() !== parsed.year || now.getMonth() !== parsed.monthIndex) return false;
+            const lastDay = new Date(parsed.year, parsed.monthIndex + 1, 0).getDate();
+            return now.getDate() >= lastDay - 6;
+        }
+
+        function finalWeekDeadline(period) {
+            const parsed = parseEvaluationPeriod(period);
+            if (!parsed) return null;
+            return new Date(parsed.year, parsed.monthIndex + 1, 0, 23, 59, 59);
+        }
+
+        function currentMonthPeriod() {
+            const now = new Date();
+            return now.toLocaleString('en-US', {month:'long'}) + ' ' + now.getFullYear();
+        }
+
+        function applyEvaluatorCriteriaToUi() {
+            const total = evaluatorCriteria.reduce((sum, c) => sum + c.impact, 0);
+            document.querySelectorAll('.criteria-card').forEach((card, index) => {
+                const c = evaluatorCriteria[index];
+                if (!c) return;
+                const badge = card.querySelector('.criteria-top .badge');
+                if (badge) badge.innerText = `${c.impact} Impact · ${(c.impact / total * 100).toFixed(2)}%`;
+            });
+            const chip = document.querySelector('.evaluator-chip-row .badge:not(.badge-info)');
+            if (chip) chip.innerText = `${evaluatorCriteria.length} Criteria · 100%`;
+            document.querySelectorAll('.criteria-eval-card').forEach((card, index) => {
+                const c = evaluatorCriteria[index];
+                if (!c) return;
+                const title = card.querySelector('.criteria-eval-header h4');
+                const desc = card.querySelector('.criteria-eval-header p');
+                const badge = card.querySelector('.criteria-eval-header .badge');
+                if (title) title.innerText = c.name;
+                if (desc) desc.innerText = c.description;
+                if (badge) badge.innerText = `${c.impact} Impact · ${(c.weight * 100).toFixed(2)}%`;
+            });
+        }
+
+        function renderEvaluatorPending() {
+            const body = document.getElementById('evaluator-pending-body');
+            const empty = document.getElementById('evaluator-pending-empty');
+            if (!body) return;
+            const pending = evaluatorEmployees.filter(emp => emp.dept === evaluatorDepartment && emp.status === 'pending');
+            body.innerHTML = pending.map(emp => `
+                <tr>
+                    <td><strong>${emp.taskId}</strong></td>
+                    <td><strong>${emp.name}</strong></td>
+                    <td>${emp.dept}</td>
+                    <td>${emp.period}</td>
+                    <td><span class="deadline-badge"><i class="fa-regular fa-clock"></i> ${isFinalWeekOfPeriod(emp.period) ? 'Open now' : 'Final 7 days only'}</span></td>
+                    <td><button class="btn-primary" style="padding:7px 12px;" ${isFinalWeekOfPeriod(emp.period) ? '' : 'disabled title="Evaluations open only during the final 7 days of the selected month."'} onclick="openEvaluationModal(${emp.id})">${isFinalWeekOfPeriod(emp.period) ? 'Evaluate Now' : 'Locked'}</button></td>
+                </tr>
+            `).join('');
+            document.getElementById('pending-count-badge').innerText = `${pending.length} Pending`;
+            empty.style.display = pending.length ? 'none' : 'block';
+        }
+
+        function populateEvaluatorHistoryPeriods() {
+            const select = document.getElementById('evaluator-history-period');
+            if (!select) return;
+            if (activeEvaluatorHistoryType === 'monthly') {
+                select.innerHTML = '<option value="all">All Months</option>' + ['January','February','March','April','May','June','July','August','September','October','November','December'].map(m => `<option value="${m}">${m}</option>`).join('');
+            } else if (activeEvaluatorHistoryType === 'quarterly') {
+                select.innerHTML = '<option value="all">All Quarters</option><option value="Q1">Q1</option><option value="Q2">Q2</option><option value="Q3">Q3</option><option value="Q4">Q4</option>';
+            } else {
+                select.innerHTML = '<option value="all">All Years</option><option value="2026">2026</option><option value="2025">2025</option>';
+            }
+        }
+
+        function setEvaluatorHistoryType(type, btn) {
+            activeEvaluatorHistoryType = type;
+            document.querySelectorAll('#evaluator-history .filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            populateEvaluatorHistoryPeriods();
+            renderEvaluatorHistory();
+        }
+
+        function renderEvaluatorHistory() {
+            const body = document.getElementById('evaluator-history-body');
+            const empty = document.getElementById('evaluator-history-empty');
+            const periodValue = document.getElementById('evaluator-history-period')?.value || 'all';
+            const yearValue = document.getElementById('evaluator-history-year')?.value || '2026';
+            if (!body) return;
+
+            let rows = evaluatorHistory.filter(item => item.type === activeEvaluatorHistoryType && item.year === yearValue);
+            if (periodValue !== 'all') {
+                if (activeEvaluatorHistoryType === 'monthly') rows = rows.filter(item => item.period.toLowerCase().startsWith(periodValue.toLowerCase() + ' '));
+                if (activeEvaluatorHistoryType === 'quarterly') rows = rows.filter(item => item.period.startsWith(periodValue));
+                if (activeEvaluatorHistoryType === 'annual') rows = rows.filter(item => item.period === `Annual ${periodValue}`);
+            }
+            body.innerHTML = rows.map(item => `
+                <tr>
+                    <td><strong>${item.name}</strong></td>
+                    <td>${item.period}</td>
+                    <td><span class="badge badge-info">${item.type.charAt(0).toUpperCase()+item.type.slice(1)}</span></td>
+                    <td class="history-score">${item.score.toFixed(2)} / 100</td>
+                    <td>${item.completed}</td>
+                    <td><span class="badge badge-success">Completed</span></td>
+                    <td><button class="btn-secondary" style="padding:7px 12px;" onclick="openHistoryDetailModal(${evaluatorHistory.indexOf(item)})"><i class="fa-regular fa-eye"></i> View Details</button></td>
+                </tr>
+            `).join('');
+            empty.style.display = rows.length ? 'none' : 'block';
+            document.getElementById('history-result-count').innerText = `${rows.length} Record${rows.length === 1 ? '' : 's'}`;
+        }
+
+        // Reconstructs a plausible per-criterion breakdown from a completed evaluation's
+        // final score, using the same weights shown in the live evaluation form. History
+        // records only store the final total, so each criterion's share is derived
+        // proportionally from that total (rounded, with any remainder folded into the
+        // last row so the rows always sum exactly back to the total).
+        function historyCriteriaBreakdown(total) {
+            const ratio = total / 100;
+            const rows = evaluatorCriteria.map(c => ({
+                name: c.name,
+                weightPct: Math.round(c.weight * 100),
+                score: Math.round(c.weight * 100 * ratio * 100) / 100,
+                rating: Math.min(5, Math.max(1, Math.round(ratio * 5)))
+            }));
+            const roundedSum = rows.reduce((sum, r) => sum + r.score, 0);
+            rows[rows.length - 1].score = Math.round((rows[rows.length - 1].score + (total - roundedSum)) * 100) / 100;
+            return rows;
+        }
+
+        function openHistoryDetailModal(index) {
+            const item = evaluatorHistory[index];
+            if (!item) return;
+            document.getElementById('history-detail-avatar').innerText = initials(item.name);
+            document.getElementById('history-detail-name').innerText = item.name;
+            document.getElementById('history-detail-type-label').innerText = item.type.charAt(0).toUpperCase() + item.type.slice(1) + ' Evaluation';
+            document.getElementById('history-detail-period').innerText = item.period;
+            document.getElementById('history-detail-completed').innerText = `Completed on ${item.completed}`;
+            document.getElementById('history-detail-total').innerText = item.score.toFixed(2);
+
+            const rows = historyCriteriaBreakdown(item.score);
+            document.getElementById('history-detail-breakdown-body').innerHTML = rows.map(r => `
+                <tr><td>${r.name}</td><td>${r.weightPct}%</td><td>${r.rating} · ${ratingLabel(r.rating)}</td><td><strong>${r.score.toFixed(2)}</strong></td></tr>
+            `).join('');
+
+            document.getElementById('history-detail-modal').style.display = 'flex';
+        }
+
+        function closeHistoryDetailModal() {
+            document.getElementById('history-detail-modal').style.display = 'none';
+        }
+
+        function updateEvaluatorCountdown() {
+            const el = document.getElementById('evaluator-countdown');
+            if (!el) return;
+            const now = new Date();
+            const activePeriod = activeEvaluationEmployee?.period || evaluatorEmployees.find(emp => emp.status === 'pending')?.period || currentMonthPeriod();
+            const deadline = finalWeekDeadline(activePeriod);
+            if (!deadline) { el.innerText = 'No deadline'; return; }
+            let diff = deadline - now;
+            if (diff <= 0) {
+                el.innerText = 'Deadline passed';
+                return;
+            }
+            const days = Math.floor(diff / 86400000); diff %= 86400000;
+            const hours = Math.floor(diff / 3600000); diff %= 3600000;
+            const mins = Math.floor(diff / 60000);
+            el.innerText = `${days}d ${hours}h ${mins}m`;
+        }
+
+        function startEvaluatorCountdown() {
+            updateEvaluatorCountdown();
+            if (countdownTimer) clearInterval(countdownTimer);
+            countdownTimer = setInterval(updateEvaluatorCountdown, 60000);
+        }
+
+        function getRadioScore(name) {
+            const checked = document.querySelector(`input[name="${name}"]:checked`);
+            return checked ? Number(checked.value) : null;
+        }
+
+        function ratingLabel(value) {
+            return ({5:'Exceptional',4:'Exceeds Expectations',3:'Meets Expectations',2:'Needs Improvement',1:'Unsatisfactory'})[value] || '—';
+        }
+
+        function updateEvaluationPreview() {
+            const scores = {};
+            evaluatorCriteria.forEach(c => scores[c.key] = getRadioScore(c.key));
+            const rows = evaluatorCriteria.map(c => {
+                const distribution = c.weight * 100;
+                const score = scores[c.key];
+                return [c.name, `${distribution.toFixed(2)}%`, score, score ? (score / 5 * distribution) : null];
+            });
+            document.getElementById('eval-score-breakdown-body').innerHTML = rows.map(r => `
+                <tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2] ? `${r[2]} · ${ratingLabel(r[2])}` : '—'}</td><td><strong>${r[3] == null ? '—' : r[3].toFixed(2)}</strong></td></tr>
+            `).join('');
+            const complete = evaluatorCriteria.every(c => scores[c.key]);
+            const total = complete ? evaluatorCriteria.reduce((sum, c) => sum + (scores[c.key] / 5 * c.weight * 100), 0) : 0;
+            document.getElementById('eval-total-score').innerText = total.toFixed(2);
+            document.getElementById('eval-rating-summary').innerText = complete ? `All criteria completed · ${total.toFixed(2)} / 100` : `Complete all ${evaluatorCriteria.length} ratings to calculate the final score.`;
+        }
+
+        function openEvaluationModal(employeeId) {
+            const employee = evaluatorEmployees.find(emp => emp.id === Number(employeeId) && emp.dept === evaluatorDepartment && emp.status === 'pending');
+            if (!employee) {
+                alert('This employee is not available for evaluation. Evaluators can only grade pending employees in their own department.');
+                return;
+            }
+            if (!isFinalWeekOfPeriod(employee.period)) {
+                alert(`Evaluation is locked. Evaluators can only perform evaluations during the final 7 days of ${employee.period}.`);
+                return;
+            }
+            activeEvaluationEmployee = employee;
+            document.getElementById('eval-modal-employee-name').innerText = employee.name;
+            document.getElementById('eval-subject-fullname').innerText = employee.name;
+            document.getElementById('eval-subject-dept').innerText = employee.dept;
+            document.getElementById('eval-subject-designation').innerText = employee.designation;
+            document.getElementById('eval-subject-period').innerText = employee.period;
+            document.getElementById('eval-modal-avatar').innerText = initials(employee.name);
+            document.querySelectorAll('#evaluationForm input[type="radio"]').forEach(input => input.checked = false);
+            updateEvaluationPreview();
+            document.getElementById('eval-modal').style.display = 'flex';
+        }
+
+        function closeEvaluationModal() {
+            document.getElementById('eval-modal').style.display = 'none';
+            activeEvaluationEmployee = null;
+        }
+
+        async function submitEvaluation() {
+            if (!activeEvaluationEmployee || !isFinalWeekOfPeriod(activeEvaluationEmployee.period)) {
+                alert('Evaluation is locked. Evaluations can only be submitted during the final 7 days of the evaluation month.');
+                return;
+            }
+            const scores = {};
+            evaluatorCriteria.forEach(c => scores[c.key] = getRadioScore(c.key));
+            if (!evaluatorCriteria.every(c => scores[c.key])) {
+                alert(`Please select a rating for all ${evaluatorCriteria.length} criteria before submitting.`);
+                return;
+            }
+            const total = evaluatorCriteria.reduce((sum, c) => sum + (scores[c.key] / 5 * c.weight * 100), 0);
+            const detail = evaluatorCriteria.map(c => `${c.name}: ${scores[c.key]} (${(scores[c.key] / 5 * c.weight * 100).toFixed(2)})`).join('\n');
+            const confirmed = confirm(`Review before submission:\n\nEmployee: ${activeEvaluationEmployee.name}\n${detail}\n\nTOTAL SCORE: ${total.toFixed(2)} / 100\n\nSubmit this final evaluation?`);
+            if (!confirmed) return;
+
+            const formData = new FormData();
+            formData.append('evaluation_id', activeEvaluationEmployee.evaluationId);
+            formData.append('evaluator_id', evaluatorId);
+            formData.append('scores', JSON.stringify(scores));
+            try {
+                const response = await fetch('submit_evaluation.php', { method:'POST', body:formData });
+                const result = await response.json();
+                if (result.status !== 'success') throw new Error(result.message || 'Unable to save evaluation.');
+                alert(result.message);
+                closeEvaluationModal();
+                await loadEvaluatorData();
+                renderEvaluatorPending();
+                renderEvaluatorHistory();
+                switchEvaluatorView('evaluator-pending');
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
+        document.addEventListener('change', function(e) {
+            if (e.target.matches('#evaluationForm input[type="radio"]')) updateEvaluationPreview();
+        });
+
+
+
+        // --- 8. Mobile Sidebar Menu (hamburger toggle) ---
+        function toggleMobileMenu() {
+            document.getElementById('main-dashboard').classList.toggle('sidebar-open');
+        }
+        function closeMobileMenu() {
+            document.getElementById('main-dashboard').classList.remove('sidebar-open');
+        }
+
+        // --- Initialize the evaluator workspace on page load ---
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                await loadEvaluatorData();
+                renderEvaluatorPending();
+                populateEvaluatorHistoryPeriods();
+                renderEvaluatorHistory();
+                startEvaluatorCountdown();
+            } catch (error) {
+                alert(error.message);
+            }
+        });
+    </script>
+</body>
+</html>
